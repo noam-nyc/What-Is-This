@@ -14,17 +14,21 @@ export const users = pgTable("users", {
   tokenBalance: integer("token_balance").notNull().default(0),
   freeAnswersRemaining: integer("free_answers_remaining").notNull().default(3),
   lastFreeAnswerReset: timestamp("last_free_answer_reset").defaultNow(),
+  subscriptionTier: text("subscription_tier").notNull().default("free"), // free, weekly, premium, pro, annual
+  dailyAnalysisCount: integer("daily_analysis_count").notNull().default(0),
+  dailyLimitResetDate: timestamp("daily_limit_reset_date").defaultNow(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Subscriptions table - tracks premium subscriptions
+// Subscriptions table - tracks Apple IAP subscriptions
 export const subscriptions = pgTable("subscriptions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
-  stripeSubscriptionId: text("stripe_subscription_id").unique(),
-  stripeCustomerId: text("stripe_customer_id"),
-  status: text("status").notNull().default("inactive"), // active, canceled, past_due, etc.
-  plan: text("plan").notNull().default("premium"), // premium ($4.99/month)
+  appleTransactionId: text("apple_transaction_id").unique(), // Apple's transaction ID
+  appleOriginalTransactionId: text("apple_original_transaction_id"), // For subscription renewals
+  appleReceiptData: text("apple_receipt_data"), // Latest receipt for validation
+  status: text("status").notNull().default("inactive"), // active, canceled, expired, grace_period
+  plan: text("plan").notNull().default("free"), // weekly, premium, pro, annual
   currentPeriodStart: timestamp("current_period_start"),
   currentPeriodEnd: timestamp("current_period_end"),
   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
@@ -110,6 +114,9 @@ export const insertUserSchema = createInsertSchema(users).omit({
   tokenBalance: true,
   freeAnswersRemaining: true,
   lastFreeAnswerReset: true,
+  subscriptionTier: true,
+  dailyAnalysisCount: true,
+  dailyLimitResetDate: true,
   createdAt: true,
 });
 
