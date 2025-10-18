@@ -196,6 +196,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Token & Subscription Management Routes
+
+  // GET /api/tokens/balance - Get current token balance
+  app.get("/api/tokens/balance", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const user = await storage.getUser(authReq.session.userId!);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ 
+        balance: user.tokenBalance,
+        freeAnswersRemaining: user.freeAnswersRemaining 
+      });
+    } catch (error) {
+      console.error("Get token balance error:", error);
+      res.status(500).json({ message: "Failed to get token balance" });
+    }
+  });
+
+  // GET /api/tokens/purchases - Get token purchase history
+  app.get("/api/tokens/purchases", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const purchases = await storage.getTokenPurchasesByUser(authReq.session.userId!);
+      res.json({ purchases });
+    } catch (error) {
+      console.error("Get token purchases error:", error);
+      res.status(500).json({ message: "Failed to get token purchases" });
+    }
+  });
+
+  // POST /api/tokens/deduct - Deduct tokens from user balance
+  app.post("/api/tokens/deduct", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const { amount } = req.body;
+
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid token amount" });
+      }
+
+      const user = await storage.getUser(authReq.session.userId!);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.tokenBalance < amount) {
+        return res.status(400).json({ message: "Insufficient token balance" });
+      }
+
+      const updatedUser = await storage.updateUser(user.id, { 
+        tokenBalance: user.tokenBalance - amount 
+      });
+
+      res.json({ balance: updatedUser?.tokenBalance || 0 });
+    } catch (error) {
+      console.error("Deduct tokens error:", error);
+      res.status(500).json({ message: "Failed to deduct tokens" });
+    }
+  });
+
+  // GET /api/subscription - Get current subscription
+  app.get("/api/subscription", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const subscription = await storage.getActiveSubscription(authReq.session.userId!);
+      
+      if (!subscription) {
+        return res.json({ subscription: null, isPremium: false });
+      }
+
+      res.json({ 
+        subscription,
+        isPremium: subscription.status === 'active' 
+      });
+    } catch (error) {
+      console.error("Get subscription error:", error);
+      res.status(500).json({ message: "Failed to get subscription" });
+    }
+  });
+
+  // GET /api/subscription/check-premium - Check if user has premium
+  app.get("/api/subscription/check-premium", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const subscription = await storage.getActiveSubscription(authReq.session.userId!);
+      
+      const isPremium = subscription && subscription.status === 'active';
+      res.json({ isPremium });
+    } catch (error) {
+      console.error("Check premium error:", error);
+      res.status(500).json({ message: "Failed to check premium status" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
