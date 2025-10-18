@@ -136,7 +136,8 @@ function Router() {
         throw new Error("Failed to fetch user");
       }
       
-      return res.json();
+      const data = await res.json();
+      return data.user;
     },
     retry: false,
   });

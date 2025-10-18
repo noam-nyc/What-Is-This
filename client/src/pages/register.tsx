@@ -48,12 +48,13 @@ export default function Register() {
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
     try {
-      await apiRequest("POST", "/api/auth/register", {
+      const res = await apiRequest("POST", "/api/auth/register", {
         email: data.email,
         password: data.password,
       });
 
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      const userData = await res.json();
+      queryClient.setQueryData(["/api/auth/user"], userData.user);
 
       toast({
         title: "Account created!",

@@ -37,9 +37,8 @@ export default function Account() {
   const [purchasingTokens, setPurchasingTokens] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
 
-  const { data: user, isLoading: loadingUser } = useQuery({
+  const { data: user, isLoading: loadingUser } = useQuery<UserType>({
     queryKey: ["/api/auth/user"],
-    select: (data: any) => data.user as UserType,
   });
 
   const { data: tokenBalance } = useQuery<{ balance: number }>({
