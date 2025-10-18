@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Camera, ArrowLeft } from "lucide-react";
+import { Camera, ArrowLeft, History } from "lucide-react";
 import TermsAndConditions from "@/components/TermsAndConditions";
 import AgeVerification from "@/components/AgeVerification";
 import LanguageSelector from "@/components/LanguageSelector";
@@ -7,6 +7,9 @@ import TextSizeControl from "@/components/TextSizeControl";
 import TokenBalance from "@/components/TokenBalance";
 import TokenPurchase from "@/components/TokenPurchase";
 import TokenCostPreview from "@/components/TokenCostPreview";
+import SubscriptionBanner from "@/components/SubscriptionBanner";
+import SubscriptionPurchase from "@/components/SubscriptionPurchase";
+import SavedAnswers from "@/components/SavedAnswers";
 import InputMethodSelector from "@/components/InputMethodSelector";
 import CameraCapture from "@/components/CameraCapture";
 import PhotoUpload from "@/components/PhotoUpload";
@@ -23,6 +26,15 @@ import { Button } from "@/components/ui/button";
 type ViewMode = "start" | "capture" | "upload" | "url" | "cost-preview" | "loading" | "warning" | "blocked" | "results";
 type ContentType = "product" | "document" | "food";
 type WarningType = "violence" | "self-harm" | "drugs" | "offensive" | "general";
+
+interface SavedAnswer {
+  id: string;
+  type: ContentType;
+  title: string;
+  date: string;
+  preview: string;
+  data: any;
+}
 
 export default function Home() {
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -41,6 +53,10 @@ export default function Home() {
   const [showTokenPurchase, setShowTokenPurchase] = useState(false);
   const [estimatedTokenCost, setEstimatedTokenCost] = useState(0);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const [isPremiumSubscriber, setIsPremiumSubscriber] = useState(false);
+  const [showSubscriptionPurchase, setShowSubscriptionPurchase] = useState(false);
+  const [showSavedAnswers, setShowSavedAnswers] = useState(false);
+  const [savedAnswers, setSavedAnswers] = useState<SavedAnswer[]>([]);
 
   // Load user data from localStorage
   useEffect(() => {
@@ -50,6 +66,8 @@ export default function Home() {
     const savedTokens = localStorage.getItem("xplain_tokens");
     const savedFreeAnswers = localStorage.getItem("xplain_free_answers");
     const savedLastReset = localStorage.getItem("xplain_last_reset");
+    const savedPremiumStatus = localStorage.getItem("xplain_premium_subscriber");
+    const savedAnswersData = localStorage.getItem("xplain_saved_answers");
     
     if (savedTermsStatus === "true") {
       setTermsAccepted(true);
@@ -62,6 +80,18 @@ export default function Home() {
 
     if (savedTokens) {
       setTokenBalance(parseInt(savedTokens));
+    }
+
+    if (savedPremiumStatus === "true") {
+      setIsPremiumSubscriber(true);
+    }
+
+    if (savedAnswersData && savedPremiumStatus === "true") {
+      try {
+        setSavedAnswers(JSON.parse(savedAnswersData));
+      } catch (e) {
+        console.error("Failed to load saved answers");
+      }
     }
 
     // Reset free answers monthly
@@ -295,6 +325,46 @@ export default function Home() {
     setShowTokenPurchase(false);
   };
 
+  const handleSubscribe = () => {
+    // TODO: remove mock functionality - integrate with Stripe for subscription
+    console.log("Subscribing to premium");
+    setIsPremiumSubscriber(true);
+    localStorage.setItem("xplain_premium_subscriber", "true");
+    setShowSubscriptionPurchase(false);
+  };
+
+  const saveCurrentAnswer = () => {
+    if (!isPremiumSubscriber) {
+      setShowSubscriptionPurchase(true);
+      return;
+    }
+
+    const newAnswer: SavedAnswer = {
+      id: Date.now().toString(),
+      type: contentType,
+      title: contentType === "product" ? mockProductData.productName :
+             contentType === "document" ? mockDocumentData.title :
+             mockFoodData.foodName,
+      date: new Date().toISOString(),
+      preview: contentType === "product" ? mockProductData.sections[0].content :
+               contentType === "document" ? mockDocumentData.summary :
+               mockFoodData.recipes[0].instructions[0],
+      data: contentType === "product" ? mockProductData :
+            contentType === "document" ? mockDocumentData :
+            mockFoodData,
+    };
+
+    const updatedAnswers = [newAnswer, ...savedAnswers];
+    setSavedAnswers(updatedAnswers);
+    localStorage.setItem("xplain_saved_answers", JSON.stringify(updatedAnswers));
+  };
+
+  const handleDeleteAnswer = (answerId: string) => {
+    const updatedAnswers = savedAnswers.filter(a => a.id !== answerId);
+    setSavedAnswers(updatedAnswers);
+    localStorage.setItem("xplain_saved_answers", JSON.stringify(updatedAnswers));
+  };
+
   const handleSendMessage = (message: string) => {
     console.log("Sending question:", message);
     const newMessage = { id: Date.now().toString(), text: message, sender: "user" as const };
@@ -360,7 +430,20 @@ export default function Home() {
             )}
 
             {viewMode === "results" ? (
-              <TextSizeControl size={textSize} onSizeChange={setTextSize} />
+              <div className="flex items-center gap-3">
+                <TextSizeControl size={textSize} onSizeChange={setTextSize} />
+                {isPremiumSubscriber && (
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => setShowSavedAnswers(true)}
+                    className="min-h-12 min-w-12"
+                    data-testid="button-view-history"
+                  >
+                    <History className="h-5 w-5" />
+                  </Button>
+                )}
+              </div>
             ) : viewMode === "start" || viewMode === "capture" || viewMode === "upload" || viewMode === "url" ? (
               <>
                 <TokenBalance
@@ -368,6 +451,17 @@ export default function Home() {
                   freeAnswersRemaining={freeAnswersRemaining}
                   onBuyTokens={() => setShowTokenPurchase(true)}
                 />
+                {isPremiumSubscriber && (
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => setShowSavedAnswers(true)}
+                    className="min-h-12 min-w-12"
+                    data-testid="button-view-history-header"
+                  >
+                    <History className="h-5 w-5" />
+                  </Button>
+                )}
                 <div className="w-64">
                   <LanguageSelector
                     selectedLanguage={selectedLanguage}
@@ -499,6 +593,9 @@ export default function Home() {
 
         {viewMode === "results" && contentType === "product" && (
           <div className="space-y-6">
+            {!isPremiumSubscriber && (
+              <SubscriptionBanner onUpgrade={() => setShowSubscriptionPurchase(true)} />
+            )}
             <ExplanationDisplay
               photo={capturedPhoto}
               productName={mockProductData.productName}
@@ -511,6 +608,16 @@ export default function Home() {
               price={mockProductData.price}
               purchaseLinks={mockProductData.purchaseLinks}
             />
+            {isPremiumSubscriber && (
+              <Button
+                size="lg"
+                onClick={saveCurrentAnswer}
+                className="w-full min-h-14 text-lg"
+                data-testid="button-save-answer"
+              >
+                Save This Answer
+              </Button>
+            )}
             <QuestionAnswer
               messages={messages}
               onSendMessage={handleSendMessage}
@@ -521,6 +628,9 @@ export default function Home() {
 
         {viewMode === "results" && contentType === "document" && (
           <div className="space-y-6">
+            {!isPremiumSubscriber && (
+              <SubscriptionBanner onUpgrade={() => setShowSubscriptionPurchase(true)} />
+            )}
             <DocumentDisplay
               title={mockDocumentData.title}
               summary={mockDocumentData.summary}
@@ -529,6 +639,16 @@ export default function Home() {
               onTextToSpeech={handleTextToSpeech}
               isSpeaking={isSpeaking}
             />
+            {isPremiumSubscriber && (
+              <Button
+                size="lg"
+                onClick={saveCurrentAnswer}
+                className="w-full min-h-14 text-lg"
+                data-testid="button-save-answer"
+              >
+                Save This Answer
+              </Button>
+            )}
             <QuestionAnswer
               messages={messages}
               onSendMessage={handleSendMessage}
@@ -539,6 +659,9 @@ export default function Home() {
 
         {viewMode === "results" && contentType === "food" && (
           <div className="space-y-6">
+            {!isPremiumSubscriber && (
+              <SubscriptionBanner onUpgrade={() => setShowSubscriptionPurchase(true)} />
+            )}
             <RecipeDisplay
               photo={capturedPhoto}
               foodName={mockFoodData.foodName}
@@ -547,6 +670,16 @@ export default function Home() {
               onTextToSpeech={handleTextToSpeech}
               isSpeaking={isSpeaking}
             />
+            {isPremiumSubscriber && (
+              <Button
+                size="lg"
+                onClick={saveCurrentAnswer}
+                className="w-full min-h-14 text-lg"
+                data-testid="button-save-answer"
+              >
+                Save This Answer
+              </Button>
+            )}
             <QuestionAnswer
               messages={messages}
               onSendMessage={handleSendMessage}
@@ -560,6 +693,25 @@ export default function Home() {
         <TokenPurchase
           onPurchase={handleTokenPurchase}
           onClose={() => setShowTokenPurchase(false)}
+        />
+      )}
+
+      {showSubscriptionPurchase && (
+        <SubscriptionPurchase
+          onSubscribe={handleSubscribe}
+          onClose={() => setShowSubscriptionPurchase(false)}
+        />
+      )}
+
+      {showSavedAnswers && (
+        <SavedAnswers
+          answers={savedAnswers}
+          onAnswerClick={(answerId) => {
+            console.log("View saved answer:", answerId);
+            setShowSavedAnswers(false);
+          }}
+          onDelete={handleDeleteAnswer}
+          onClose={() => setShowSavedAnswers(false)}
         />
       )}
     </div>
