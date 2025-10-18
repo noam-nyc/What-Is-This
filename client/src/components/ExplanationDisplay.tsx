@@ -1,11 +1,24 @@
 import { Volume2, AlertTriangle, Wrench, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import ProductLinks from "./ProductLinks";
 
 interface ExplanationSection {
   title: string;
   content: string;
   icon: "info" | "wrench" | "warning";
+}
+
+interface PriceInfo {
+  amount: string;
+  currency: string;
+  range?: string;
+}
+
+interface PurchaseLink {
+  name: string;
+  url: string;
+  type: "online" | "nearby";
 }
 
 interface ExplanationDisplayProps {
@@ -15,6 +28,10 @@ interface ExplanationDisplayProps {
   textSize: "small" | "medium" | "large";
   onTextToSpeech: () => void;
   isSpeaking: boolean;
+  wikipediaUrl?: string;
+  manufacturerUrl?: string;
+  price?: PriceInfo;
+  purchaseLinks?: PurchaseLink[];
 }
 
 const iconMap = {
@@ -42,9 +59,13 @@ export default function ExplanationDisplay({
   textSize,
   onTextToSpeech,
   isSpeaking,
+  wikipediaUrl,
+  manufacturerUrl,
+  price,
+  purchaseLinks = [],
 }: ExplanationDisplayProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <img
         src={photo}
         alt="Product"
@@ -94,6 +115,16 @@ export default function ExplanationDisplay({
           );
         })}
       </div>
+
+      {(wikipediaUrl || manufacturerUrl || price || purchaseLinks.length > 0) && (
+        <ProductLinks
+          wikipediaUrl={wikipediaUrl}
+          manufacturerUrl={manufacturerUrl}
+          price={price}
+          purchaseLinks={purchaseLinks}
+          textSize={textSize}
+        />
+      )}
 
       <Button
         size="lg"

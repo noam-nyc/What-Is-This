@@ -42,6 +42,19 @@ export default function Home() {
         icon: "warning" as const,
       },
     ],
+    wikipediaUrl: "https://en.wikipedia.org/wiki/Water_bottle",
+    manufacturerUrl: "https://example.com/smartbottle",
+    price: {
+      amount: "34.99",
+      currency: "$",
+      range: "Typical price: $30-40",
+    },
+    purchaseLinks: [
+      { name: "Amazon", url: "https://amazon.com/smart-water-bottle", type: "online" as const },
+      { name: "Best Buy", url: "https://bestbuy.com/smart-bottles", type: "online" as const },
+      { name: "Walmart", url: "https://walmart.com/store-finder", type: "nearby" as const },
+      { name: "Target", url: "https://target.com/store-locator", type: "nearby" as const },
+    ],
   };
 
   const handlePhotoCapture = (imageData: string) => {
@@ -158,6 +171,10 @@ export default function Home() {
             textSize={textSize}
             onTextToSpeech={handleTextToSpeech}
             isSpeaking={isSpeaking}
+            wikipediaUrl={mockExplanation.wikipediaUrl}
+            manufacturerUrl={mockExplanation.manufacturerUrl}
+            price={mockExplanation.price}
+            purchaseLinks={mockExplanation.purchaseLinks}
           />
         )}
       </main>
