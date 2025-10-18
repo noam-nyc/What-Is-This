@@ -19,7 +19,7 @@ export default function TermsAndConditions({ onAccept }: TermsAndConditionsProps
           <Shield className="h-16 w-16 text-primary" />
           <h1 className="text-3xl font-bold">Terms and Conditions</h1>
           <p className="text-xl text-muted-foreground">
-            Please read and accept before using Xplain This
+            Please read and accept before using What Is This?
           </p>
         </div>
 
@@ -28,7 +28,7 @@ export default function TermsAndConditions({ onAccept }: TermsAndConditionsProps
             <div className="space-y-4 text-lg leading-relaxed">
               <h2 className="text-2xl font-semibold">Agreement to Terms</h2>
               <p>
-                By using Xplain This, you agree to these terms and conditions.
+                By using What Is This?, you agree to these terms and conditions.
                 If you do not agree, please do not use this application.
               </p>
 
@@ -41,7 +41,7 @@ export default function TermsAndConditions({ onAccept }: TermsAndConditionsProps
 
               <h2 className="text-2xl font-semibold mt-6">Prohibited Use</h2>
               <p className="font-semibold text-destructive">
-                You are strictly prohibited from using Xplain This for any
+                You are strictly prohibited from using What Is This? for any
                 illegal or illicit purposes, including but not limited to:
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4">

@@ -68,7 +68,7 @@ export default function Login() {
           </div>
           <CardTitle className="text-3xl text-center">Welcome Back</CardTitle>
           <CardDescription className="text-lg text-center">
-            Sign in to your Xplain This account
+            Sign in to your What Is This? account
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

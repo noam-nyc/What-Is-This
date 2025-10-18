@@ -58,7 +58,7 @@ export default function Register() {
 
       toast({
         title: "Account created!",
-        description: "Welcome to Xplain This. Let's get started!",
+        description: "Welcome to What Is This?. Let's get started!",
       });
 
       setLocation("/onboarding");
@@ -85,7 +85,7 @@ export default function Register() {
             </div>
             <CardTitle className="text-3xl text-center">Create Account</CardTitle>
             <CardDescription className="text-lg text-center">
-              Join Xplain This to understand the world around you
+              Join What Is This? to understand the world around you
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -261,14 +261,14 @@ export default function Register() {
           <DialogHeader>
             <DialogTitle className="text-2xl">Terms & Conditions</DialogTitle>
             <DialogDescription className="text-lg">
-              Please read these terms carefully before using Xplain This
+              Please read these terms carefully before using What Is This?
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 text-base leading-relaxed">
             <section>
               <h3 className="font-semibold text-lg mb-2">1. Service Description</h3>
               <p>
-                Xplain This is an AI-powered image analysis service that provides explanations,
+                What Is This? is an AI-powered image analysis service that provides explanations,
                 product information, and recipes in multiple languages. The service uses artificial
                 intelligence and may not always be 100% accurate.
               </p>

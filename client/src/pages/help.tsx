@@ -14,7 +14,7 @@ export default function Help() {
             Help & Documentation
           </h1>
           <p className="text-lg text-muted-foreground mt-2">
-            Everything you need to know about using Xplain This
+            Everything you need to know about using What Is This?
           </p>
         </div>
 
@@ -94,7 +94,7 @@ export default function Help() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-base leading-relaxed">
-                  We offer three ways to use Xplain This:
+                  We offer three ways to use What Is This?:
                   
                   <div className="mt-3 space-y-3">
                     <div>
@@ -198,7 +198,7 @@ export default function Help() {
                   <Alert className="mt-3 border-warning/50 bg-warning/10">
                     <AlertTriangle className="w-5 h-5 text-warning" />
                     <AlertDescription className="text-base ml-2">
-                      AI can sometimes make mistakes. Do not rely on Xplain This for:
+                      AI can sometimes make mistakes. Do not rely on What Is This? for:
                       <ul className="list-disc pl-6 mt-2">
                         <li>Medical diagnosis or advice</li>
                         <li>Legal advice</li>
@@ -216,7 +216,7 @@ export default function Help() {
                   What types of content can I analyze?
                 </AccordionTrigger>
                 <AccordionContent className="text-base leading-relaxed">
-                  Xplain This can analyze:
+                  What Is This? can analyze:
                   <ul className="list-disc pl-6 mt-2 space-y-1">
                     <li><strong>Products:</strong> Get information about items, with Wikipedia links when available</li>
                     <li><strong>Food:</strong> Identify dishes and get recipes with ingredients and instructions</li>

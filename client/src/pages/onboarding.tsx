@@ -6,7 +6,7 @@ import { Camera, Upload, Link2, MessageSquare, CreditCard, Save, CheckCircle2, A
 
 const steps = [
   {
-    title: "Welcome to Xplain This!",
+    title: "Welcome to What Is This?",
     description: "Your personal AI assistant for understanding images, documents, and products in any language.",
     icon: MessageSquare,
     content: "Take a photo or upload an image, and we'll explain what it is in simple terms. Perfect for seniors, non-English speakers, and anyone who needs quick information.",
@@ -49,7 +49,7 @@ const steps = [
   },
   {
     title: "Free & Premium Options",
-    description: "Choose how you want to use Xplain This:",
+    description: "Choose how you want to use What Is This?:",
     icon: CreditCard,
     content: (
       <div className="space-y-4 text-left">

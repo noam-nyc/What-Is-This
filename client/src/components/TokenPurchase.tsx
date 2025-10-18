@@ -30,7 +30,7 @@ export default function TokenPurchase({ onPurchase, onClose }: TokenPurchaseProp
         </div>
 
         <p className="text-xl text-muted-foreground">
-          Choose a token package to continue using Xplain This
+          Choose a token package to continue using What Is This?
         </p>
 
         <div className="grid md:grid-cols-2 gap-4">

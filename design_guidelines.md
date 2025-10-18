@@ -1,4 +1,4 @@
-# Design Guidelines for "Xplain This"
+# Design Guidelines for "What Is This?"
 
 ## Design Approach
 **Accessibility-First System Approach** - Inspired by Material Design's accessibility principles and iOS Camera app's simplicity, optimized for seniors and non-technical users. Success metrics prioritize usability, readability, and reduced cognitive load over visual sophistication.

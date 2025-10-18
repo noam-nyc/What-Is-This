@@ -1,8 +1,8 @@
-# Xplain This - AI-Powered Image Analysis Platform
+# What Is This? - AI-Powered Image Analysis Platform
 
 ## Overview
 
-Xplain This is an accessibility-first web application designed to help seniors and non-English speakers understand images, products, and documents through simple AI-powered explanations. Users can take photos, upload images, or paste URLs to receive easy-to-understand explanations in their preferred language. The platform uses OpenAI's GPT-4 Vision API for image analysis and includes safety features like emergency detection and content moderation.
+What Is This? is an accessibility-first web application designed to help seniors and non-English speakers understand images, products, and documents through simple AI-powered explanations. Users can take photos, upload images, or paste URLs to receive easy-to-understand explanations in their preferred language. The platform uses OpenAI's GPT-4 Vision API for image analysis and includes safety features like emergency detection and content moderation.
 
 ## User Preferences
 
