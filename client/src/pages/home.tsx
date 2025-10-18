@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Camera, ArrowLeft } from "lucide-react";
+import AgeVerification from "@/components/AgeVerification";
 import LanguageSelector from "@/components/LanguageSelector";
 import TextSizeControl from "@/components/TextSizeControl";
 import InputMethodSelector from "@/components/InputMethodSelector";
@@ -9,13 +10,18 @@ import UrlInput from "@/components/UrlInput";
 import ExplanationDisplay from "@/components/ExplanationDisplay";
 import DocumentDisplay from "@/components/DocumentDisplay";
 import QuestionAnswer from "@/components/QuestionAnswer";
+import ContentWarning from "@/components/ContentWarning";
+import ContentBlocked from "@/components/ContentBlocked";
 import LoadingState from "@/components/LoadingState";
 import { Button } from "@/components/ui/button";
 
-type ViewMode = "start" | "capture" | "upload" | "url" | "loading" | "results";
+type ViewMode = "start" | "capture" | "upload" | "url" | "loading" | "warning" | "blocked" | "results";
 type ContentType = "product" | "document";
+type WarningType = "violence" | "self-harm" | "drugs" | "offensive" | "general";
 
 export default function Home() {
+  const [ageVerified, setAgeVerified] = useState(false);
+  const [isAdult, setIsAdult] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("start");
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [textSize, setTextSize] = useState<"small" | "medium" | "large">("medium");
@@ -23,6 +29,24 @@ export default function Home() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [contentType, setContentType] = useState<ContentType>("product");
   const [messages, setMessages] = useState<Array<{ id: string; text: string; sender: "user" | "assistant" }>>([]);
+  const [warningType, setWarningType] = useState<WarningType>("general");
+
+  // Load age verification from localStorage
+  useEffect(() => {
+    const savedAgeStatus = localStorage.getItem("xplain_age_verified");
+    const savedIsAdult = localStorage.getItem("xplain_is_adult");
+    if (savedAgeStatus === "true" && savedIsAdult) {
+      setAgeVerified(true);
+      setIsAdult(savedIsAdult === "true");
+    }
+  }, []);
+
+  const handleAgeVerified = (adult: boolean) => {
+    setAgeVerified(true);
+    setIsAdult(adult);
+    localStorage.setItem("xplain_age_verified", "true");
+    localStorage.setItem("xplain_is_adult", String(adult));
+  };
 
   // TODO: remove mock functionality - replace with real API call
   const mockProductData = {
@@ -83,8 +107,23 @@ export default function Home() {
     // Randomly decide if it's a product or document for demo purposes
     const isDocument = Math.random() > 0.5;
     setContentType(isDocument ? "document" : "product");
+    
+    // TODO: remove mock functionality - simulate content analysis for sensitive material
+    const hasSensitiveContent = Math.random() > 0.7; // 30% chance for demo
+    const sensitiveTypes: WarningType[] = ["violence", "self-harm", "drugs", "offensive", "general"];
+    const randomWarningType = sensitiveTypes[Math.floor(Math.random() * sensitiveTypes.length)];
+    
     setTimeout(() => {
-      setViewMode("results");
+      if (hasSensitiveContent) {
+        setWarningType(randomWarningType);
+        if (isAdult) {
+          setViewMode("warning");
+        } else {
+          setViewMode("blocked");
+        }
+      } else {
+        setViewMode("results");
+      }
     }, 2000);
   };
 
@@ -93,8 +132,23 @@ export default function Home() {
     setViewMode("loading");
     // TODO: remove mock functionality - make real API call here
     setContentType("product");
+    
+    // TODO: remove mock functionality - simulate content analysis
+    const hasSensitiveContent = Math.random() > 0.7;
+    const sensitiveTypes: WarningType[] = ["violence", "self-harm", "drugs", "offensive", "general"];
+    const randomWarningType = sensitiveTypes[Math.floor(Math.random() * sensitiveTypes.length)];
+    
     setTimeout(() => {
-      setViewMode("results");
+      if (hasSensitiveContent) {
+        setWarningType(randomWarningType);
+        if (isAdult) {
+          setViewMode("warning");
+        } else {
+          setViewMode("blocked");
+        }
+      } else {
+        setViewMode("results");
+      }
     }, 2000);
   };
 
@@ -130,6 +184,10 @@ export default function Home() {
     setIsSpeaking(false);
     setMessages([]);
   };
+
+  if (!ageVerified) {
+    return <AgeVerification onAgeVerified={handleAgeVerified} />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -246,6 +304,22 @@ export default function Home() {
 
         {viewMode === "loading" && (
           <LoadingState message="Analyzing content..." />
+        )}
+
+        {viewMode === "warning" && (
+          <ContentWarning
+            warningType={warningType}
+            onProceed={() => setViewMode("results")}
+            onGoBack={handleStartOver}
+            textSize={textSize}
+          />
+        )}
+
+        {viewMode === "blocked" && (
+          <ContentBlocked
+            onGoBack={handleStartOver}
+            textSize={textSize}
+          />
         )}
 
         {viewMode === "results" && contentType === "product" && (
