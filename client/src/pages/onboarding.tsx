@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Camera, Upload, Link2, MessageSquare, CreditCard, Save, CheckCircle2, AlertTriangle, Shield } from "lucide-react";
 
 const steps = [
@@ -66,7 +67,7 @@ const steps = [
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-success" />
-              <span>Emergency detection included</span>
+              <span>Safety alerts for concerning content</span>
             </li>
           </ul>
         </div>
@@ -103,13 +104,13 @@ const steps = [
     content: (
       <div className="space-y-4 text-left">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-6 h-6 text-destructive" />
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h4 className="font-semibold text-lg mb-1">Emergency Detection</h4>
+            <h4 className="font-semibold text-lg mb-1">Safety Alerts</h4>
             <p className="text-muted-foreground">
-              We detect medical emergencies, fires, violence, and accidents. You'll see a "Call Emergency Services" button if danger is detected.
+              Our AI flags potentially concerning content like injuries or hazards, and provides helpful information about what you're seeing.
             </p>
           </div>
         </div>
@@ -123,6 +124,35 @@ const steps = [
               Inappropriate content is automatically blocked to ensure a safe experience for everyone.
             </p>
           </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: "AI Disclaimer",
+    description: "Important information about AI accuracy:",
+    icon: AlertTriangle,
+    content: (
+      <div className="space-y-4 text-left">
+        <Alert className="border-warning/50 bg-warning/10">
+          <AlertTriangle className="w-5 h-5 text-warning" />
+          <AlertDescription className="text-base ml-2">
+            <strong>Please Note:</strong> Our AI is very helpful but not perfect. It can make mistakes when analyzing images.
+          </AlertDescription>
+        </Alert>
+        <div className="space-y-3">
+          <p className="text-muted-foreground">
+            What Is This? uses advanced AI to analyze images, but like all AI, it can:
+          </p>
+          <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
+            <li>Misidentify products or objects</li>
+            <li>Provide incorrect information</li>
+            <li>Miss important details</li>
+            <li>Make errors in translation</li>
+          </ul>
+          <p className="text-muted-foreground font-semibold">
+            Always verify important information from reliable sources. Never rely solely on AI for medical, legal, or safety decisions.
+          </p>
         </div>
       </div>
     ),

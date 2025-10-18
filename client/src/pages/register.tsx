@@ -18,7 +18,7 @@ const registerSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
-  ageConfirmed: z.boolean().refine((val) => val === true, "You must be 18 or older"),
+  ageConfirmed: z.boolean().refine((val) => val === true, "You must be 13 or older"),
   termsAccepted: z.boolean().refine((val) => val === true, "You must accept the terms"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -170,7 +170,7 @@ export default function Register() {
                 <Alert className="border-warning/50 bg-warning/10">
                   <AlertCircle className="h-5 w-5 text-warning-foreground" />
                   <AlertDescription className="text-base ml-2">
-                    You must be 18 years or older to use this service
+                    You must be 13 years or older to use this service. If you are under 18, you should have parental consent.
                   </AlertDescription>
                 </Alert>
 
@@ -189,7 +189,7 @@ export default function Register() {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-lg font-normal cursor-pointer">
-                          I confirm that I am 18 years of age or older
+                          I confirm that I am 13 years of age or older (if under 18, I have parental consent)
                         </FormLabel>
                         <FormMessage />
                       </div>
@@ -277,17 +277,18 @@ export default function Register() {
             <section>
               <h3 className="font-semibold text-lg mb-2">2. Age Requirement</h3>
               <p>
-                You must be at least 18 years old to use this service. By creating an account,
+                You must be at least 13 years old to use this service. If you are under 18,
+                you must have parental or guardian consent. By creating an account,
                 you confirm that you meet this age requirement.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold text-lg mb-2">3. Emergency Situations</h3>
+              <h3 className="font-semibold text-lg mb-2">3. Safety Information</h3>
               <p>
-                This service can detect potential emergencies in images (medical, fire, violence).
-                However, this is not a substitute for emergency services. If you are in immediate
-                danger, call your local emergency number (911 in the US) immediately.
+                This service provides safety alerts for potentially concerning content. These alerts are
+                informational only and not a substitute for professional advice or emergency services.
+                If you're in immediate danger, call your local emergency number (911 in the US) immediately.
               </p>
             </section>
 

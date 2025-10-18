@@ -121,29 +121,58 @@ export default function Help() {
                 <AccordionTrigger className="text-lg">
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5" />
-                    What is emergency detection?
+                    What are safety alerts?
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-base leading-relaxed">
-                  Our AI automatically scans every image for potential emergencies, including:
+                  Our AI provides helpful information when it detects potentially concerning content, including:
                   <ul className="list-disc pl-6 mt-2 space-y-1">
-                    <li>Medical emergencies (injuries, severe bleeding, unconsciousness)</li>
-                    <li>Fires and smoke</li>
-                    <li>Violence or dangerous situations</li>
-                    <li>Accidents or disasters</li>
+                    <li>Injuries or medical situations</li>
+                    <li>Hazardous materials or situations</li>
+                    <li>Safety concerns that need attention</li>
                   </ul>
                   
-                  <Alert className="mt-4 border-destructive bg-destructive/10">
-                    <AlertTriangle className="w-5 h-5 text-destructive" />
+                  <Alert className="mt-4 border-warning/50 bg-warning/10">
+                    <AlertTriangle className="w-5 h-5 text-warning" />
                     <AlertDescription className="text-base ml-2">
-                      <strong>Important:</strong> If danger is detected, you'll see a red alert with a "Call Emergency Services" button. 
-                      This feature is designed to help, but it's not perfect. If you're in immediate danger, always call 911 (or your local emergency number) right away.
+                      <strong>Important:</strong> Safety alerts are informational and educational. This app is not a substitute for professional medical advice or emergency services. If you're in immediate danger, always call 911 (or your local emergency number) right away.
                     </AlertDescription>
                   </Alert>
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-5">
+                <AccordionTrigger className="text-lg">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5" />
+                    Is the AI always accurate?
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-base leading-relaxed">
+                  <Alert className="mb-4 border-warning/50 bg-warning/10">
+                    <AlertTriangle className="w-5 h-5 text-warning" />
+                    <AlertDescription className="text-base ml-2">
+                      <strong>Important:</strong> Our AI is very helpful but not perfect. It can make mistakes when analyzing images.
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <p>
+                    What Is This? uses advanced AI technology, but like all AI, it has limitations:
+                  </p>
+                  <ul className="list-disc pl-6 mt-2 space-y-1">
+                    <li>It can misidentify products or objects</li>
+                    <li>Information provided may be incorrect</li>
+                    <li>Important details might be missed</li>
+                    <li>Translations may contain errors</li>
+                  </ul>
+                  
+                  <p className="mt-3 font-semibold">
+                    Always verify important information from reliable sources. Never rely solely on AI for medical, legal, or safety-critical decisions.
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-6">
                 <AccordionTrigger className="text-lg">
                   <div className="flex items-center gap-3">
                     <Save className="w-5 h-5" />
@@ -165,7 +194,7 @@ export default function Help() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-6">
+              <AccordionItem value="item-7">
                 <AccordionTrigger className="text-lg">
                   Is my data private?
                 </AccordionTrigger>
@@ -229,7 +258,7 @@ export default function Help() {
                   </p>
                   <ul className="list-disc pl-6 mt-2 space-y-1">
                     <li>Explicit or adult content</li>
-                    <li>Violent or disturbing images (except for emergency detection)</li>
+                    <li>Extremely violent or disturbing images</li>
                     <li>Illegal content</li>
                   </ul>
                 </AccordionContent>
@@ -251,7 +280,7 @@ export default function Help() {
               If you can't find the answer to your question here, we're happy to help!
             </p>
             <Button className="h-12 text-lg" asChild data-testid="button-contact">
-              <a href="mailto:support@xplainthis.com">
+              <a href="mailto:support@whatisthis.app">
                 <Mail className="w-5 h-5 mr-2" />
                 Contact Support
               </a>

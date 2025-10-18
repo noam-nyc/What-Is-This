@@ -11,7 +11,6 @@ import {
   calculateTokenCost, 
   calculateTokensFromCost, 
   SYSTEM_PROMPTS,
-  type EmergencyAnalysis,
   type AnalysisResult 
 } from "./openai";
 
@@ -396,25 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? { type: "image_url" as const, image_url: { url: imageUrl } }
         : { type: "image_url" as const, image_url: { url: `data:image/jpeg;base64,${imageBase64}` } };
 
-      // Step 1: Emergency Detection
-      const emergencyResponse = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPTS.emergency },
-          { role: "user", content: [
-            { type: "text", text: "Analyze this image for any emergency or dangerous situations." },
-            imageContent,
-          ]},
-        ],
-        max_tokens: 500,
-        response_format: { type: "json_object" },
-      });
-
-      const emergencyAnalysis: EmergencyAnalysis = JSON.parse(
-        emergencyResponse.choices[0].message.content || "{}"
-      );
-
-      // Step 2: Detailed Content Analysis
+      // Step 1: Detailed Content Analysis
       const contentResponse = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -482,12 +463,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate total token usage
       const totalInputTokens = 
-        (emergencyResponse.usage?.prompt_tokens || 0) +
         (contentResponse.usage?.prompt_tokens || 0) +
         (detailedResponse?.usage?.prompt_tokens || 0);
 
       const totalOutputTokens = 
-        (emergencyResponse.usage?.completion_tokens || 0) +
         (contentResponse.usage?.completion_tokens || 0) +
         (detailedResponse?.usage?.completion_tokens || 0);
 
@@ -544,7 +523,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Return analysis results
       res.json({
-        emergency: emergencyAnalysis,
         analysis: detailedAnalysis,
         usage: {
           inputTokens: totalInputTokens,
@@ -610,7 +588,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               currency: "usd",
               product_data: {
                 name: pkg.name,
-                description: `${pkg.tokens.toLocaleString()} tokens for Xplain This`,
+                description: `${pkg.tokens.toLocaleString()} tokens for What Is This?`,
               },
               unit_amount: pkg.price,
             },

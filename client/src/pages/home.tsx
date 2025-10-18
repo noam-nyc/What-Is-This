@@ -425,7 +425,7 @@ export default function Home() {
             ) : (
               <div className="flex items-center gap-3">
                 <Camera className="h-8 w-8 text-primary" />
-                <h1 className="text-2xl font-bold">Xplain This</h1>
+                <h1 className="text-2xl font-bold">What Is This?</h1>
               </div>
             )}
 

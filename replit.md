@@ -2,7 +2,7 @@
 
 ## Overview
 
-What Is This? is an accessibility-first web application designed to help seniors and non-English speakers understand images, products, and documents through simple AI-powered explanations. Users can take photos, upload images, or paste URLs to receive easy-to-understand explanations in their preferred language. The platform uses OpenAI's GPT-4 Vision API for image analysis and includes safety features like emergency detection and content moderation.
+What Is This? is an accessibility-first web application designed to help seniors and non-English speakers understand images, products, and documents through simple AI-powered explanations. Users can take photos, upload images, or paste URLs to receive easy-to-understand explanations in their preferred language. The platform uses OpenAI's GPT-4 Vision API for image analysis and includes safety features like safety alerts and content moderation.
 
 ## User Preferences
 
@@ -63,7 +63,7 @@ Preferred communication style: Simple, everyday language.
 
 **AI & Image Analysis**
 - **OpenAI GPT-4 Vision API** for image analysis and natural language explanations
-- System prompts configured for emergency detection and general analysis
+- System prompts configured for general analysis (products, documents, food items)
 - Token cost calculation with 100% markup over OpenAI pricing ($0.01 input/$0.03 output per 1K tokens)
 - Usage tracking for billing and quota management
 
@@ -97,10 +97,11 @@ Preferred communication style: Simple, everyday language.
 - `NODE_ENV`: Environment indicator (development/production)
 
 **Security & Safety Features**
-- Age verification system (18+ content warnings, under-18 content blocking)
-- Emergency detection in images (medical, fire, violence, accidents, hazards)
+- Age verification system (13+ minimum age, parental consent required for under-18)
+- Safety alerts for potentially concerning content (injuries, hazards, safety concerns)
 - Content moderation for sensitive material (violence, self-harm, drugs, offensive content)
 - Terms and conditions acceptance flow
+- AI disclaimer about potential mistakes and limitations
 - Rate limiting through token system to prevent abuse
 
 **Deployment Architecture**

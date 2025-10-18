@@ -23,12 +23,6 @@ const LANGUAGES = [
 ];
 
 interface AnalysisResult {
-  emergency?: {
-    detected: boolean;
-    type?: string;
-    severity?: string;
-    message?: string;
-  };
   contentType?: string;
   explanation?: string;
   product?: {
@@ -109,14 +103,6 @@ export default function Analyze() {
 
       const data = await response.json();
       setResult(data);
-
-      if (data.emergency?.detected) {
-        toast({
-          variant: "destructive",
-          title: "Emergency Detected!",
-          description: data.emergency.message,
-        });
-      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -332,28 +318,6 @@ export default function Analyze() {
         {/* Results */}
         {result && (
           <div className="space-y-4">
-            {/* Emergency Alert */}
-            {result.emergency?.detected && (
-              <Alert className="border-destructive bg-destructive/10">
-                <AlertTriangle className="w-6 h-6 text-destructive" />
-                <div className="ml-3 flex-1">
-                  <AlertDescription className="text-lg font-semibold mb-3">
-                    {result.emergency.message}
-                  </AlertDescription>
-                  <Button
-                    variant="destructive"
-                    className="h-14 text-xl w-full sm:w-auto"
-                    asChild
-                    data-testid="button-emergency"
-                  >
-                    <a href="tel:911">
-                      <Phone className="w-5 h-5 mr-2" />
-                      Call Emergency Services (911)
-                    </a>
-                  </Button>
-                </div>
-              </Alert>
-            )}
 
             {/* Explanation */}
             <Card>

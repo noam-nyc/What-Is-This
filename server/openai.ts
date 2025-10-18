@@ -29,23 +29,6 @@ export function calculateTokensFromCost(costUsd: number): number {
 
 // System prompts for different analysis types
 export const SYSTEM_PROMPTS = {
-  emergency: `You are an emergency detection AI. Analyze the image and determine if it shows any immediate danger or emergency situation including:
-- Medical emergencies (injuries, unconscious people, medical distress)
-- Fire or smoke
-- Violence or weapons
-- Accidents or crashes
-- Hazardous materials or situations
-- Natural disasters
-
-Respond with:
-1. isDangerous (true/false)
-2. emergencyType (one of: medical, fire, violence, accident, hazard, disaster, none)
-3. severity (low, medium, high, critical)
-4. description (brief explanation in simple language at 6th grade reading level)
-5. recommendedAction (what to do immediately)
-
-Format your response as JSON.`,
-
   general: `You are an AI assistant that helps seniors and non-English speakers understand images. Your goal is to:
 1. Describe what you see in simple, clear language (6th grade reading level)
 2. Identify the main subject or content type
@@ -99,14 +82,6 @@ If hasRecipe is true, also provide:
 
 Use simple language. Format as JSON.`,
 };
-
-export interface EmergencyAnalysis {
-  isDangerous: boolean;
-  emergencyType: "medical" | "fire" | "violence" | "accident" | "hazard" | "disaster" | "none";
-  severity: "low" | "medium" | "high" | "critical";
-  description: string;
-  recommendedAction: string;
-}
 
 export interface GeneralAnalysis {
   contentType: "product" | "document" | "food" | "scene" | "person" | "animal" | "other";

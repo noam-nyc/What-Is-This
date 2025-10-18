@@ -21,7 +21,7 @@ export default function AgeVerification({ onAgeVerified }: AgeVerificationProps)
       return;
     }
 
-    const isAdult = ageNum >= 18;
+    const isAdult = ageNum >= 13;
     onAgeVerified(isAdult);
   };
 
@@ -30,9 +30,9 @@ export default function AgeVerification({ onAgeVerified }: AgeVerificationProps)
       <Card className="w-full max-w-2xl p-8 space-y-6">
         <div className="flex flex-col items-center gap-4 text-center">
           <Shield className="h-16 w-16 text-primary" />
-          <h1 className="text-3xl font-bold">Welcome to Xplain This</h1>
+          <h1 className="text-3xl font-bold">Welcome to What Is This?</h1>
           <p className="text-xl text-muted-foreground max-w-lg">
-            To keep you safe, please tell us your age
+            To keep you safe, please tell us your age (must be 13 or older)
           </p>
         </div>
 
@@ -77,7 +77,8 @@ export default function AgeVerification({ onAgeVerified }: AgeVerificationProps)
         <div className="bg-muted/30 rounded-xl p-4 space-y-2">
           <p className="text-lg font-semibold">Why we ask:</p>
           <p className="text-lg leading-relaxed">
-            We protect users under 18 by filtering sensitive content. Adults receive warnings before viewing potentially sensitive information.
+            We protect younger users by filtering sensitive content. Users under 13 cannot use this service.
+            If you're under 18, please make sure you have parental consent.
           </p>
         </div>
       </Card>

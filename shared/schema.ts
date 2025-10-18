@@ -65,7 +65,6 @@ export const usageLogs = pgTable("usage_logs", {
   openaiTokens: integer("openai_tokens").default(0), // actual OpenAI tokens
   cost: decimal("cost", { precision: 10, scale: 4 }).default("0"), // actual cost in USD
   wasFree: boolean("was_free").default(false), // used free answer
-  emergencyDetected: boolean("emergency_detected").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
