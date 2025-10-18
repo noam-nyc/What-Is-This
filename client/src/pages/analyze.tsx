@@ -60,7 +60,10 @@ export default function Analyze() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
-  const { data: user } = useQuery<User>({ queryKey: ["/api/auth/user"] });
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+    select: (data: any) => data.user as User,
+  });
   const { data: tokenBalance } = useQuery<{ balance: number }>({
     queryKey: ["/api/tokens/balance"],
   });

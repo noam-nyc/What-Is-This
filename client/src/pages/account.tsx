@@ -25,10 +25,10 @@ interface Subscription {
 }
 
 const TOKEN_PACKAGES = [
-  { tokens: 100, price: 4.99, priceId: "price_100tokens" },
-  { tokens: 250, price: 9.99, priceId: "price_250tokens" },
-  { tokens: 500, price: 17.99, priceId: "price_500tokens" },
-  { tokens: 1000, price: 29.99, priceId: "price_1000tokens" },
+  { id: "package_1", name: "Starter Pack", tokens: 50000, price: 4.99 },
+  { id: "package_2", name: "Value Pack", tokens: 150000, price: 12.99 },
+  { id: "package_3", name: "Pro Pack", tokens: 300000, price: 24.99 },
+  { id: "package_4", name: "Ultimate Pack", tokens: 1000000, price: 79.99 },
 ];
 
 export default function Account() {
@@ -37,8 +37,9 @@ export default function Account() {
   const [purchasingTokens, setPurchasingTokens] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
 
-  const { data: user, isLoading: loadingUser } = useQuery<UserType>({
+  const { data: user, isLoading: loadingUser } = useQuery({
     queryKey: ["/api/auth/user"],
+    select: (data: any) => data.user as UserType,
   });
 
   const { data: tokenBalance } = useQuery<{ balance: number }>({
@@ -60,8 +61,10 @@ export default function Account() {
   const handleLogout = async () => {
     try {
       await apiRequest("POST", "/api/auth/logout");
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      setLocation("/login");
+      // Clear all queries to ensure fresh state
+      queryClient.clear();
+      // Force navigate to login
+      window.location.href = "/login";
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -71,11 +74,11 @@ export default function Account() {
     }
   };
 
-  const handlePurchaseTokens = async (priceId: string) => {
+  const handlePurchaseTokens = async (packageId: string) => {
     setPurchasingTokens(true);
     try {
       const response = await apiRequest("POST", "/api/stripe/create-token-checkout", {
-        priceId,
+        packageId,
       });
       const { url } = await response.json();
       window.location.href = url;
@@ -248,15 +251,15 @@ export default function Account() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {TOKEN_PACKAGES.map((pkg) => (
                   <Button
-                    key={pkg.tokens}
+                    key={pkg.id}
                     variant="outline"
-                    onClick={() => handlePurchaseTokens(pkg.priceId)}
+                    onClick={() => handlePurchaseTokens(pkg.id)}
                     disabled={purchasingTokens}
                     className="h-auto py-4 flex-col items-start hover-elevate"
                     data-testid={`button-buy-${pkg.tokens}-tokens`}
                   >
                     <div className="flex items-center justify-between w-full mb-2">
-                      <span className="text-xl font-semibold">{pkg.tokens} tokens</span>
+                      <span className="text-xl font-semibold">{pkg.tokens.toLocaleString()} tokens</span>
                       <ShoppingCart className="w-5 h-5" />
                     </div>
                     <span className="text-2xl font-bold text-primary">${pkg.price}</span>

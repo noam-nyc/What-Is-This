@@ -114,7 +114,7 @@ function AuthenticatedApp() {
         <Route path="/saved" component={SavedAnswers} />
         <Route path="/account" component={Account} />
         <Route path="/help" component={Help} />
-        <Route component={NotFound} />
+        <Route path="/:rest*" component={NotFound} />
       </Switch>
     </div>
   );
