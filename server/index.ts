@@ -1,5 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import pgSession from "connect-pg-simple";
+import { db } from "./db";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -12,10 +14,24 @@ app.use("/api/stripe/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Session configuration
+// Session configuration with PostgreSQL store
+const PgSession = pgSession(session);
+
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET is required for production");
+}
+
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is required for session storage");
+}
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "xplain-this-secret-key",
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+    }),
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
