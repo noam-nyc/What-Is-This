@@ -13,6 +13,7 @@ import {
   SYSTEM_PROMPTS,
   type AnalysisResult 
 } from "./openai";
+import { getDailyLimit, shouldResetDailyLimit, getMidnightUTC, getNextMidnightUTC, type SubscriptionTier } from "./iap-config";
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -385,9 +386,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Image URL or base64 data required" });
       }
 
-      const user = await storage.getUser(authReq.session.userId!);
+      let user = await storage.getUser(authReq.session.userId!);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check and reset daily limit if needed
+      if (shouldResetDailyLimit(user.dailyLimitResetDate)) {
+        await storage.updateUser(user.id, {
+          dailyAnalysisCount: 0,
+          dailyLimitResetDate: getMidnightUTC(),
+        });
+        // Refresh user object
+        user = await storage.getUser(user.id);
+        if (!user) {
+          return res.status(500).json({ message: "Failed to refresh user data" });
+        }
+      }
+
+      // Check daily limit based on subscription tier (default to free if invalid)
+      const userTier = (user.subscriptionTier || "free") as SubscriptionTier;
+      const dailyLimit = getDailyLimit(userTier);
+      if (user.dailyAnalysisCount >= dailyLimit) {
+        return res.status(429).json({ 
+          message: "Daily analysis limit reached",
+          dailyLimit,
+          currentCount: user.dailyAnalysisCount,
+          subscriptionTier: user.subscriptionTier,
+          resetsAt: getNextMidnightUTC().toISOString(),
+        });
       }
 
       // Prepare image content for OpenAI
@@ -520,6 +547,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         costUsd,
         success: true,
       });
+
+      // Increment daily analysis count (use refreshed user count to avoid race conditions)
+      const refreshedUser = await storage.getUser(user.id);
+      if (refreshedUser) {
+        await storage.updateUser(user.id, {
+          dailyAnalysisCount: refreshedUser.dailyAnalysisCount + 1,
+        });
+      }
 
       // Return analysis results
       res.json({
