@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Camera, ArrowLeft } from "lucide-react";
+import TermsAndConditions from "@/components/TermsAndConditions";
 import AgeVerification from "@/components/AgeVerification";
 import LanguageSelector from "@/components/LanguageSelector";
 import TextSizeControl from "@/components/TextSizeControl";
@@ -9,6 +10,7 @@ import PhotoUpload from "@/components/PhotoUpload";
 import UrlInput from "@/components/UrlInput";
 import ExplanationDisplay from "@/components/ExplanationDisplay";
 import DocumentDisplay from "@/components/DocumentDisplay";
+import RecipeDisplay from "@/components/RecipeDisplay";
 import QuestionAnswer from "@/components/QuestionAnswer";
 import ContentWarning from "@/components/ContentWarning";
 import ContentBlocked from "@/components/ContentBlocked";
@@ -16,10 +18,11 @@ import LoadingState from "@/components/LoadingState";
 import { Button } from "@/components/ui/button";
 
 type ViewMode = "start" | "capture" | "upload" | "url" | "loading" | "warning" | "blocked" | "results";
-type ContentType = "product" | "document";
+type ContentType = "product" | "document" | "food";
 type WarningType = "violence" | "self-harm" | "drugs" | "offensive" | "general";
 
 export default function Home() {
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageVerified, setAgeVerified] = useState(false);
   const [isAdult, setIsAdult] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("start");
@@ -31,15 +34,26 @@ export default function Home() {
   const [messages, setMessages] = useState<Array<{ id: string; text: string; sender: "user" | "assistant" }>>([]);
   const [warningType, setWarningType] = useState<WarningType>("general");
 
-  // Load age verification from localStorage
+  // Load terms and age verification from localStorage
   useEffect(() => {
+    const savedTermsStatus = localStorage.getItem("xplain_terms_accepted");
     const savedAgeStatus = localStorage.getItem("xplain_age_verified");
     const savedIsAdult = localStorage.getItem("xplain_is_adult");
+    
+    if (savedTermsStatus === "true") {
+      setTermsAccepted(true);
+    }
+    
     if (savedAgeStatus === "true" && savedIsAdult) {
       setAgeVerified(true);
       setIsAdult(savedIsAdult === "true");
     }
   }, []);
+
+  const handleTermsAccepted = () => {
+    setTermsAccepted(true);
+    localStorage.setItem("xplain_terms_accepted", "true");
+  };
 
   const handleAgeVerified = (adult: boolean) => {
     setAgeVerified(true);
@@ -100,13 +114,70 @@ export default function Home() {
     ],
   };
 
+  // TODO: remove mock functionality - replace with real API call
+  const mockFoodData = {
+    foodName: "Fresh Tomatoes",
+    recipes: [
+      {
+        name: "Simple Tomato Salad",
+        prepTime: "10 minutes",
+        servings: "2 people",
+        ingredients: [
+          "3 large tomatoes",
+          "1 tablespoon olive oil",
+          "Salt and pepper",
+          "Fresh basil leaves",
+        ],
+        instructions: [
+          "Wash the tomatoes and cut them into slices.",
+          "Put the slices on a plate.",
+          "Drizzle olive oil over the tomatoes.",
+          "Sprinkle salt and pepper on top.",
+          "Add fresh basil leaves.",
+          "Serve fresh and enjoy!",
+        ],
+        tips: [
+          "Use ripe tomatoes for best flavor.",
+          "You can add mozzarella cheese if you like.",
+        ],
+      },
+      {
+        name: "Easy Tomato Sauce",
+        prepTime: "30 minutes",
+        servings: "4 people",
+        ingredients: [
+          "6 large tomatoes",
+          "2 tablespoons olive oil",
+          "2 cloves garlic",
+          "Salt and pepper",
+          "Pinch of sugar (optional)",
+        ],
+        instructions: [
+          "Wash and chop the tomatoes into small pieces.",
+          "Peel and chop the garlic.",
+          "Heat olive oil in a pan.",
+          "Add garlic and cook for 1 minute until it smells good.",
+          "Add the chopped tomatoes.",
+          "Cook on low heat for 20 minutes, stirring sometimes.",
+          "Add salt, pepper, and a pinch of sugar if needed.",
+          "Use on pasta, pizza, or bread.",
+        ],
+        tips: [
+          "The sauce gets better the longer you cook it.",
+          "You can freeze extra sauce for later use.",
+        ],
+      },
+    ],
+  };
+
   const handlePhotoCapture = (imageData: string) => {
     setCapturedPhoto(imageData);
     setViewMode("loading");
     // TODO: remove mock functionality - make real API call here
-    // Randomly decide if it's a product or document for demo purposes
-    const isDocument = Math.random() > 0.5;
-    setContentType(isDocument ? "document" : "product");
+    // Randomly decide content type for demo purposes
+    const contentTypes: ContentType[] = ["product", "document", "food"];
+    const randomType = contentTypes[Math.floor(Math.random() * contentTypes.length)];
+    setContentType(randomType);
     
     // TODO: remove mock functionality - simulate content analysis for sensitive material
     const hasSensitiveContent = Math.random() > 0.7; // 30% chance for demo
@@ -184,6 +255,10 @@ export default function Home() {
     setIsSpeaking(false);
     setMessages([]);
   };
+
+  if (!termsAccepted) {
+    return <TermsAndConditions onAccept={handleTermsAccepted} />;
+  }
 
   if (!ageVerified) {
     return <AgeVerification onAgeVerified={handleAgeVerified} />;
@@ -350,6 +425,24 @@ export default function Home() {
               title={mockDocumentData.title}
               summary={mockDocumentData.summary}
               followUpActions={mockDocumentData.followUpActions}
+              textSize={textSize}
+              onTextToSpeech={handleTextToSpeech}
+              isSpeaking={isSpeaking}
+            />
+            <QuestionAnswer
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              textSize={textSize}
+            />
+          </div>
+        )}
+
+        {viewMode === "results" && contentType === "food" && (
+          <div className="space-y-6">
+            <RecipeDisplay
+              photo={capturedPhoto}
+              foodName={mockFoodData.foodName}
+              recipes={mockFoodData.recipes}
               textSize={textSize}
               onTextToSpeech={handleTextToSpeech}
               isSpeaking={isSpeaking}
