@@ -325,12 +325,12 @@ export default function Home() {
     setShowTokenPurchase(false);
   };
 
-  const handleSubscribe = () => {
-    // TODO: remove mock functionality - integrate with Stripe for subscription
-    console.log("Subscribing to premium");
-    setIsPremiumSubscriber(true);
-    localStorage.setItem("xplain_premium_subscriber", "true");
+  const handleSubscribe = (tier: string) => {
+    // Note: In production, this would trigger iOS App Store purchase flow
+    console.log("Subscribing to tier:", tier);
+    // For now, just close the modal - actual IAP handled by iOS
     setShowSubscriptionPurchase(false);
+    // TODO: Call Apple IAP SDK to initiate purchase
   };
 
   const saveCurrentAnswer = () => {

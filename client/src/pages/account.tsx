@@ -74,37 +74,21 @@ export default function Account() {
   };
 
   const handlePurchaseTokens = async (packageId: string) => {
-    setPurchasingTokens(true);
-    try {
-      const response = await apiRequest("POST", "/api/stripe/create-token-checkout", {
-        packageId,
-      });
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Checkout failed",
-        description: error.message,
-      });
-      setPurchasingTokens(false);
-    }
+    // Note: Token purchases removed for iOS-only Apple IAP
+    toast({
+      title: "Use App Store",
+      description: "Please purchase subscriptions through the iOS App Store",
+    });
+    setPurchasingTokens(false);
   };
 
   const handleSubscribe = async () => {
-    setSubscribing(true);
-    try {
-      const response = await apiRequest("POST", "/api/stripe/create-subscription-checkout");
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Checkout failed",
-        description: error.message,
-      });
-      setSubscribing(false);
-    }
+    // Note: Subscriptions managed through iOS App Store
+    toast({
+      title: "Use App Store",
+      description: "Please purchase subscriptions through the iOS App Store",
+    });
+    setSubscribing(false);
   };
 
   if (loadingUser) {
@@ -167,18 +151,15 @@ export default function Account() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {isPremium ? (
+            {subscription && subscription.status === "active" ? (
               <>
-                <div className="flex items-center gap-3">
-                  <Badge className="text-base px-4 py-2" data-testid="badge-premium-active">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Badge className="text-base px-4 py-2" data-testid="badge-subscription-active">
                     <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Premium Active
+                    Subscription Active
                   </Badge>
-                  <span className="text-lg text-muted-foreground">
-                    $4.99/month
-                  </span>
                 </div>
-                {subscription?.currentPeriodEnd && (
+                {subscription.currentPeriodEnd && (
                   <p className="text-base text-muted-foreground">
                     Renews on {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
                   </p>
@@ -186,123 +167,43 @@ export default function Account() {
                 <Alert>
                   <CheckCircle2 className="w-5 h-5 text-success" />
                   <AlertDescription className="text-base ml-2">
-                    You have unlimited analysis requests and can save answers
+                    Manage your subscription through the iOS App Store
                   </AlertDescription>
                 </Alert>
               </>
             ) : (
               <>
                 <p className="text-lg text-muted-foreground mb-4">
-                  Upgrade to Premium for unlimited analysis and saved answers
+                  Choose from 4 subscription tiers to unlock daily analyses
                 </p>
-                <div className="border rounded-lg p-4 space-y-3">
-                  <h4 className="font-semibold text-xl">Premium - $4.99/month</h4>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-base">
-                      <CheckCircle2 className="w-5 h-5 text-success" />
-                      Unlimited analysis requests
-                    </li>
-                    <li className="flex items-center gap-2 text-base">
-                      <CheckCircle2 className="w-5 h-5 text-success" />
-                      Save answers for later
-                    </li>
-                    <li className="flex items-center gap-2 text-base">
-                      <CheckCircle2 className="w-5 h-5 text-success" />
-                      Priority processing
-                    </li>
-                  </ul>
-                  <Button
-                    onClick={handleSubscribe}
-                    disabled={subscribing}
-                    className="w-full h-14 text-xl mt-4"
-                    data-testid="button-subscribe"
-                  >
-                    {subscribing ? "Processing..." : "Subscribe to Premium"}
-                  </Button>
+                <div className="space-y-3">
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-semibold text-lg">Weekly - $2.99/week</h4>
+                    <p className="text-sm text-muted-foreground">10 analyses per day</p>
+                  </div>
+                  <div className="border rounded-lg p-4 border-primary">
+                    <h4 className="font-semibold text-lg">Premium - $5.99/month</h4>
+                    <p className="text-sm text-muted-foreground">40 analyses per day</p>
+                    <Badge className="mt-2">Most Popular</Badge>
+                  </div>
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-semibold text-lg">Pro - $12.99/month</h4>
+                    <p className="text-sm text-muted-foreground">75 analyses per day</p>
+                  </div>
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-semibold text-lg">Annual - $99.99/year</h4>
+                    <p className="text-sm text-muted-foreground">75 analyses per day · Best value</p>
+                  </div>
                 </div>
+                <Alert>
+                  <AlertDescription className="text-base">
+                    Subscribe through the iOS App Store when prompted in the app
+                  </AlertDescription>
+                </Alert>
               </>
             )}
           </CardContent>
         </Card>
-
-        {/* Token Balance */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl flex items-center gap-3">
-              <Coins className="w-6 h-6" />
-              Token Balance
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Use tokens for pay-as-you-go analysis
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className="text-xl px-5 py-2" data-testid="badge-token-balance">
-                {tokenBalance?.balance ?? 0} tokens
-              </Badge>
-            </div>
-
-            <Separator />
-
-            <div>
-              <h4 className="font-semibold text-lg mb-3">Purchase Tokens</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {TOKEN_PACKAGES.map((pkg) => (
-                  <Button
-                    key={pkg.id}
-                    variant="outline"
-                    onClick={() => handlePurchaseTokens(pkg.id)}
-                    disabled={purchasingTokens}
-                    className="h-auto py-4 flex-col items-start hover-elevate"
-                    data-testid={`button-buy-${pkg.tokens}-tokens`}
-                  >
-                    <div className="flex items-center justify-between w-full mb-2">
-                      <span className="text-xl font-semibold">{pkg.tokens.toLocaleString()} tokens</span>
-                      <ShoppingCart className="w-5 h-5" />
-                    </div>
-                    <span className="text-2xl font-bold text-primary">${pkg.price}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Purchase History */}
-        {purchases && purchases.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-3">
-                <Package className="w-6 h-6" />
-                Purchase History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {purchases.map((purchase) => (
-                  <div
-                    key={purchase.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                    data-testid={`purchase-${purchase.id}`}
-                  >
-                    <div>
-                      <p className="font-medium text-lg">
-                        {purchase.tokensReceived} tokens
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(purchase.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <p className="text-lg font-semibold">
-                      ${(purchase.amount / 100).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
