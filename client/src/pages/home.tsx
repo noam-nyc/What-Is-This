@@ -4,6 +4,9 @@ import TermsAndConditions from "@/components/TermsAndConditions";
 import AgeVerification from "@/components/AgeVerification";
 import LanguageSelector from "@/components/LanguageSelector";
 import TextSizeControl from "@/components/TextSizeControl";
+import TokenBalance from "@/components/TokenBalance";
+import TokenPurchase from "@/components/TokenPurchase";
+import TokenCostPreview from "@/components/TokenCostPreview";
 import InputMethodSelector from "@/components/InputMethodSelector";
 import CameraCapture from "@/components/CameraCapture";
 import PhotoUpload from "@/components/PhotoUpload";
@@ -17,7 +20,7 @@ import ContentBlocked from "@/components/ContentBlocked";
 import LoadingState from "@/components/LoadingState";
 import { Button } from "@/components/ui/button";
 
-type ViewMode = "start" | "capture" | "upload" | "url" | "loading" | "warning" | "blocked" | "results";
+type ViewMode = "start" | "capture" | "upload" | "url" | "cost-preview" | "loading" | "warning" | "blocked" | "results";
 type ContentType = "product" | "document" | "food";
 type WarningType = "violence" | "self-harm" | "drugs" | "offensive" | "general";
 
@@ -33,12 +36,20 @@ export default function Home() {
   const [contentType, setContentType] = useState<ContentType>("product");
   const [messages, setMessages] = useState<Array<{ id: string; text: string; sender: "user" | "assistant" }>>([]);
   const [warningType, setWarningType] = useState<WarningType>("general");
+  const [tokenBalance, setTokenBalance] = useState(0);
+  const [freeAnswersRemaining, setFreeAnswersRemaining] = useState(3);
+  const [showTokenPurchase, setShowTokenPurchase] = useState(false);
+  const [estimatedTokenCost, setEstimatedTokenCost] = useState(0);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
-  // Load terms and age verification from localStorage
+  // Load user data from localStorage
   useEffect(() => {
     const savedTermsStatus = localStorage.getItem("xplain_terms_accepted");
     const savedAgeStatus = localStorage.getItem("xplain_age_verified");
     const savedIsAdult = localStorage.getItem("xplain_is_adult");
+    const savedTokens = localStorage.getItem("xplain_tokens");
+    const savedFreeAnswers = localStorage.getItem("xplain_free_answers");
+    const savedLastReset = localStorage.getItem("xplain_last_reset");
     
     if (savedTermsStatus === "true") {
       setTermsAccepted(true);
@@ -47,6 +58,25 @@ export default function Home() {
     if (savedAgeStatus === "true" && savedIsAdult) {
       setAgeVerified(true);
       setIsAdult(savedIsAdult === "true");
+    }
+
+    if (savedTokens) {
+      setTokenBalance(parseInt(savedTokens));
+    }
+
+    // Reset free answers monthly
+    const now = new Date();
+    const lastReset = savedLastReset ? new Date(savedLastReset) : null;
+    const shouldReset = !lastReset || 
+      lastReset.getMonth() !== now.getMonth() || 
+      lastReset.getFullYear() !== now.getFullYear();
+
+    if (shouldReset) {
+      setFreeAnswersRemaining(3);
+      localStorage.setItem("xplain_free_answers", "3");
+      localStorage.setItem("xplain_last_reset", now.toISOString());
+    } else if (savedFreeAnswers) {
+      setFreeAnswersRemaining(parseInt(savedFreeAnswers));
     }
   }, []);
 
@@ -170,17 +200,52 @@ export default function Home() {
     ],
   };
 
+  const calculateTokenCost = (type: ContentType): number => {
+    // TODO: remove mock functionality - calculate based on actual OpenAI tokens with 100% markup
+    // Base estimates (OpenAI tokens * 2 for 100% markup)
+    const baseCosts = {
+      product: 200,  // ~100 OpenAI tokens * 2
+      document: 300, // ~150 OpenAI tokens * 2
+      food: 250,     // ~125 OpenAI tokens * 2
+    };
+    return baseCosts[type];
+  };
+
   const handlePhotoCapture = (imageData: string) => {
     setCapturedPhoto(imageData);
-    setViewMode("loading");
-    // TODO: remove mock functionality - make real API call here
+    
     // Randomly decide content type for demo purposes
     const contentTypes: ContentType[] = ["product", "document", "food"];
     const randomType = contentTypes[Math.floor(Math.random() * contentTypes.length)];
     setContentType(randomType);
     
+    // Calculate token cost
+    const cost = calculateTokenCost(randomType);
+    setEstimatedTokenCost(cost);
+    
+    // Store the action to execute after token confirmation
+    setPendingAction(() => () => processAnalysis(imageData, randomType));
+    
+    // Show cost preview
+    setViewMode("cost-preview");
+  };
+
+  const processAnalysis = (imageData: string, type: ContentType) => {
+    setViewMode("loading");
+    
+    // Deduct tokens or free answer
+    if (freeAnswersRemaining > 0) {
+      const newFreeAnswers = freeAnswersRemaining - 1;
+      setFreeAnswersRemaining(newFreeAnswers);
+      localStorage.setItem("xplain_free_answers", String(newFreeAnswers));
+    } else {
+      const newBalance = tokenBalance - estimatedTokenCost;
+      setTokenBalance(newBalance);
+      localStorage.setItem("xplain_tokens", String(newBalance));
+    }
+    
     // TODO: remove mock functionality - simulate content analysis for sensitive material
-    const hasSensitiveContent = Math.random() > 0.7; // 30% chance for demo
+    const hasSensitiveContent = Math.random() > 0.7;
     const sensitiveTypes: WarningType[] = ["violence", "self-harm", "drugs", "offensive", "general"];
     const randomWarningType = sensitiveTypes[Math.floor(Math.random() * sensitiveTypes.length)];
     
@@ -200,27 +265,34 @@ export default function Home() {
 
   const handleUrlSubmit = (url: string) => {
     console.log("Analyzing URL:", url);
-    setViewMode("loading");
-    // TODO: remove mock functionality - make real API call here
-    setContentType("product");
     
-    // TODO: remove mock functionality - simulate content analysis
-    const hasSensitiveContent = Math.random() > 0.7;
-    const sensitiveTypes: WarningType[] = ["violence", "self-harm", "drugs", "offensive", "general"];
-    const randomWarningType = sensitiveTypes[Math.floor(Math.random() * sensitiveTypes.length)];
+    const type: ContentType = "product";
+    setContentType(type);
     
-    setTimeout(() => {
-      if (hasSensitiveContent) {
-        setWarningType(randomWarningType);
-        if (isAdult) {
-          setViewMode("warning");
-        } else {
-          setViewMode("blocked");
-        }
-      } else {
-        setViewMode("results");
-      }
-    }, 2000);
+    const cost = calculateTokenCost(type);
+    setEstimatedTokenCost(cost);
+    
+    setPendingAction(() => () => processAnalysis("", type));
+    setViewMode("cost-preview");
+  };
+
+  const handleTokenPurchase = (packageIndex: number) => {
+    // TODO: remove mock functionality - integrate with Stripe
+    const packages = [
+      { tokens: 1000, price: 5 },
+      { tokens: 2500, price: 10 },
+      { tokens: 5000, price: 18 },
+      { tokens: 10000, price: 30 },
+    ];
+    
+    const selectedPackage = packages[packageIndex];
+    console.log("Purchasing package:", selectedPackage);
+    
+    // Simulate successful purchase
+    const newBalance = tokenBalance + selectedPackage.tokens;
+    setTokenBalance(newBalance);
+    localStorage.setItem("xplain_tokens", String(newBalance));
+    setShowTokenPurchase(false);
   };
 
   const handleSendMessage = (message: string) => {
@@ -287,11 +359,23 @@ export default function Home() {
               </div>
             )}
 
-            {viewMode === "results" && (
+            {viewMode === "results" ? (
               <TextSizeControl size={textSize} onSizeChange={setTextSize} />
-            )}
-
-            {viewMode !== "results" && (
+            ) : viewMode === "start" || viewMode === "capture" || viewMode === "upload" || viewMode === "url" ? (
+              <>
+                <TokenBalance
+                  tokens={tokenBalance}
+                  freeAnswersRemaining={freeAnswersRemaining}
+                  onBuyTokens={() => setShowTokenPurchase(true)}
+                />
+                <div className="w-64">
+                  <LanguageSelector
+                    selectedLanguage={selectedLanguage}
+                    onLanguageChange={setSelectedLanguage}
+                  />
+                </div>
+              </>
+            ) : (
               <div className="w-64">
                 <LanguageSelector
                   selectedLanguage={selectedLanguage}
@@ -377,6 +461,22 @@ export default function Home() {
           </div>
         )}
 
+        {viewMode === "cost-preview" && (
+          <TokenCostPreview
+            estimatedTokens={estimatedTokenCost}
+            currentBalance={tokenBalance}
+            freeAnswersRemaining={freeAnswersRemaining}
+            onProceed={() => {
+              if (pendingAction) {
+                pendingAction();
+                setPendingAction(null);
+              }
+            }}
+            onCancel={handleStartOver}
+            textSize={textSize}
+          />
+        )}
+
         {viewMode === "loading" && (
           <LoadingState message="Analyzing content..." />
         )}
@@ -455,6 +555,13 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {showTokenPurchase && (
+        <TokenPurchase
+          onPurchase={handleTokenPurchase}
+          onClose={() => setShowTokenPurchase(false)}
+        />
+      )}
     </div>
   );
 }
