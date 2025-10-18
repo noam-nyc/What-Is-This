@@ -304,6 +304,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Saved Answers Routes
+
+  // GET /api/saved-answers - Get user's saved answers
+  app.get("/api/saved-answers", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const answers = await storage.getSavedAnswersByUser(authReq.session.userId!);
+      res.json({ answers });
+    } catch (error) {
+      console.error("Get saved answers error:", error);
+      res.status(500).json({ message: "Failed to get saved answers" });
+    }
+  });
+
+  // POST /api/saved-answers - Save an answer (premium only)
+  app.post("/api/saved-answers", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const { question, answer, language, imageUrl } = req.body;
+
+      if (!question || !answer) {
+        return res.status(400).json({ message: "Question and answer required" });
+      }
+
+      // Check if user has premium subscription
+      const subscription = await storage.getActiveSubscription(authReq.session.userId!);
+      const isPremium = subscription && subscription.status === 'active';
+
+      if (!isPremium) {
+        return res.status(403).json({ 
+          message: "Premium subscription required to save answers" 
+        });
+      }
+
+      // Save the answer
+      const savedAnswer = await storage.createSavedAnswer({
+        userId: authReq.session.userId!,
+        question,
+        answer,
+        language: language || "en",
+        imageUrl: imageUrl || null,
+      });
+
+      res.status(201).json({ savedAnswer });
+    } catch (error) {
+      console.error("Save answer error:", error);
+      res.status(500).json({ message: "Failed to save answer" });
+    }
+  });
+
+  // DELETE /api/saved-answers/:id - Delete a saved answer
+  app.delete("/api/saved-answers/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const { id } = req.params;
+
+      // Delete the answer (storage layer handles ownership check)
+      const deleted = await storage.deleteSavedAnswer(id, authReq.session.userId!);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Saved answer not found or not authorized" });
+      }
+      
+      res.json({ message: "Answer deleted successfully" });
+    } catch (error) {
+      console.error("Delete saved answer error:", error);
+      res.status(500).json({ message: "Failed to delete answer" });
+    }
+  });
+
   // OpenAI Vision Analysis Routes
 
   // POST /api/analyze - Analyze image with OpenAI Vision
