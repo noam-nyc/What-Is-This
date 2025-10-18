@@ -32,6 +32,7 @@ export interface IStorage {
   createSubscription(subscription: InsertSubscription): Promise<Subscription>;
   updateSubscription(id: string, updates: Partial<Subscription>): Promise<Subscription | undefined>;
   getSubscriptionByStripeId(stripeSubscriptionId: string): Promise<Subscription | undefined>;
+  getSubscriptionByAppleTransactionId(transactionId: string): Promise<Subscription | undefined>;
   
   // Token purchase operations
   createTokenPurchase(purchase: InsertTokenPurchase): Promise<TokenPurchase>;
@@ -132,6 +133,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId));
+    return subscription || undefined;
+  }
+
+  async getSubscriptionByAppleTransactionId(transactionId: string): Promise<Subscription | undefined> {
+    const [subscription] = await db
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.appleOriginalTransactionId, transactionId));
     return subscription || undefined;
   }
 
