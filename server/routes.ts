@@ -6,6 +6,14 @@ import { insertUserSchema } from "@shared/schema";
 import type { AuthenticatedRequest } from "./types";
 import { stripe, TOKEN_PACKAGES, PREMIUM_SUBSCRIPTION } from "./stripe";
 import Stripe from "stripe";
+import { 
+  openai, 
+  calculateTokenCost, 
+  calculateTokensFromCost, 
+  SYSTEM_PROMPTS,
+  type EmergencyAnalysis,
+  type AnalysisResult 
+} from "./openai";
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -293,6 +301,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Check premium error:", error);
       res.status(500).json({ message: "Failed to check premium status" });
+    }
+  });
+
+  // OpenAI Vision Analysis Routes
+
+  // POST /api/analyze - Analyze image with OpenAI Vision
+  app.post("/api/analyze", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const { imageUrl, imageBase64, language = "en" } = req.body;
+
+      if (!imageUrl && !imageBase64) {
+        return res.status(400).json({ message: "Image URL or base64 data required" });
+      }
+
+      const user = await storage.getUser(authReq.session.userId!);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Prepare image content for OpenAI
+      const imageContent = imageUrl 
+        ? { type: "image_url" as const, image_url: { url: imageUrl } }
+        : { type: "image_url" as const, image_url: { url: `data:image/jpeg;base64,${imageBase64}` } };
+
+      // Step 1: Emergency Detection
+      const emergencyResponse = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPTS.emergency },
+          { role: "user", content: [
+            { type: "text", text: "Analyze this image for any emergency or dangerous situations." },
+            imageContent,
+          ]},
+        ],
+        max_tokens: 500,
+        response_format: { type: "json_object" },
+      });
+
+      const emergencyAnalysis: EmergencyAnalysis = JSON.parse(
+        emergencyResponse.choices[0].message.content || "{}"
+      );
+
+      // Step 2: Detailed Content Analysis
+      const contentResponse = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPTS.general },
+          { role: "user", content: [
+            { type: "text", text: `Analyze this image and provide detailed information. Respond in ${language === "en" ? "English" : language}.` },
+            imageContent,
+          ]},
+        ],
+        max_tokens: 1500,
+        response_format: { type: "json_object" },
+      });
+
+      const generalAnalysis: AnalysisResult = JSON.parse(
+        contentResponse.choices[0].message.content || "{}"
+      );
+
+      // Step 3: Content-specific analysis based on detected type
+      let detailedAnalysis: AnalysisResult = generalAnalysis;
+      let detailedResponse;
+
+      if (generalAnalysis.contentType === "product") {
+        detailedResponse = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPTS.product },
+            { role: "user", content: [
+              { type: "text", text: `Provide detailed product information. Respond in ${language === "en" ? "English" : language}.` },
+              imageContent,
+            ]},
+          ],
+          max_tokens: 1000,
+          response_format: { type: "json_object" },
+        });
+        detailedAnalysis = { ...generalAnalysis, ...JSON.parse(detailedResponse.choices[0].message.content || "{}") };
+      } else if (generalAnalysis.contentType === "document") {
+        detailedResponse = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPTS.document },
+            { role: "user", content: [
+              { type: "text", text: `Read and explain this document. Respond in ${language === "en" ? "English" : language}.` },
+              imageContent,
+            ]},
+          ],
+          max_tokens: 1500,
+          response_format: { type: "json_object" },
+        });
+        detailedAnalysis = { ...generalAnalysis, ...JSON.parse(detailedResponse.choices[0].message.content || "{}") };
+      } else if (generalAnalysis.contentType === "food") {
+        detailedResponse = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPTS.food },
+            { role: "user", content: [
+              { type: "text", text: `Provide food and recipe information. Respond in ${language === "en" ? "English" : language}.` },
+              imageContent,
+            ]},
+          ],
+          max_tokens: 1500,
+          response_format: { type: "json_object" },
+        });
+        detailedAnalysis = { ...generalAnalysis, ...JSON.parse(detailedResponse.choices[0].message.content || "{}") };
+      }
+
+      // Calculate total token usage
+      const totalInputTokens = 
+        (emergencyResponse.usage?.prompt_tokens || 0) +
+        (contentResponse.usage?.prompt_tokens || 0) +
+        (detailedResponse?.usage?.prompt_tokens || 0);
+
+      const totalOutputTokens = 
+        (emergencyResponse.usage?.completion_tokens || 0) +
+        (contentResponse.usage?.completion_tokens || 0) +
+        (detailedResponse?.usage?.completion_tokens || 0);
+
+      const totalTokens = totalInputTokens + totalOutputTokens;
+      const costUsd = calculateTokenCost(totalInputTokens, totalOutputTokens);
+      const tokensToDeduct = calculateTokensFromCost(costUsd);
+
+      // Check if user can afford this
+      const subscription = await storage.getActiveSubscription(user.id);
+      const isPremium = subscription && subscription.status === 'active';
+
+      let paymentMethod: "free" | "tokens" | "premium" = "premium";
+
+      if (!isPremium) {
+        if (user.freeAnswersRemaining > 0) {
+          // Use free answer
+          await storage.updateUser(user.id, {
+            freeAnswersRemaining: user.freeAnswersRemaining - 1,
+          });
+          paymentMethod = "free";
+        } else if (user.tokenBalance >= tokensToDeduct) {
+          // Use tokens
+          await storage.updateUser(user.id, {
+            tokenBalance: user.tokenBalance - tokensToDeduct,
+          });
+          paymentMethod = "tokens";
+        } else {
+          // Log failed attempt due to insufficient balance
+          await storage.createUsageLog({
+            userId: user.id,
+            apiEndpoint: "/api/analyze",
+            tokensUsed: totalTokens,
+            costUsd,
+            success: false,
+          });
+
+          return res.status(402).json({ 
+            message: "Insufficient tokens or free answers",
+            requiredTokens: tokensToDeduct,
+            currentBalance: user.tokenBalance,
+            freeAnswersRemaining: user.freeAnswersRemaining,
+          });
+        }
+      }
+
+      // Log successful usage
+      await storage.createUsageLog({
+        userId: user.id,
+        apiEndpoint: "/api/analyze",
+        tokensUsed: totalTokens,
+        costUsd,
+        success: true,
+      });
+
+      // Return analysis results
+      res.json({
+        emergency: emergencyAnalysis,
+        analysis: detailedAnalysis,
+        usage: {
+          inputTokens: totalInputTokens,
+          outputTokens: totalOutputTokens,
+          totalTokens,
+          costUsd,
+          tokensDeducted: paymentMethod === "tokens" ? tokensToDeduct : 0,
+          paymentMethod,
+          remainingBalance: paymentMethod === "tokens" 
+            ? user.tokenBalance - tokensToDeduct 
+            : user.tokenBalance,
+          freeAnswersRemaining: paymentMethod === "free"
+            ? user.freeAnswersRemaining - 1
+            : user.freeAnswersRemaining,
+        },
+      });
+    } catch (error: any) {
+      console.error("Analysis error:", error);
+      
+      // Log failed usage
+      const authReq = req as AuthenticatedRequest;
+      if (authReq.session.userId) {
+        await storage.createUsageLog({
+          userId: authReq.session.userId,
+          apiEndpoint: "/api/analyze",
+          tokensUsed: 0,
+          costUsd: 0,
+          success: false,
+        });
+      }
+
+      res.status(500).json({ 
+        message: "Failed to analyze image",
+        error: error.message 
+      });
     }
   });
 
