@@ -4,6 +4,8 @@ import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import { insertUserSchema } from "@shared/schema";
 import type { AuthenticatedRequest } from "./types";
+import { stripe, TOKEN_PACKAGES, PREMIUM_SUBSCRIPTION } from "./stripe";
+import Stripe from "stripe";
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -291,6 +293,257 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Check premium error:", error);
       res.status(500).json({ message: "Failed to check premium status" });
+    }
+  });
+
+  // Stripe Checkout & Payment Routes
+
+  // POST /api/stripe/create-token-checkout - Create checkout session for token purchase
+  app.post("/api/stripe/create-token-checkout", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const { packageId } = req.body;
+
+      const pkg = TOKEN_PACKAGES.find(p => p.id === packageId);
+      if (!pkg) {
+        return res.status(400).json({ message: "Invalid package ID" });
+      }
+
+      const user = await storage.getUser(authReq.session.userId!);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Create Stripe checkout session
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: pkg.name,
+                description: `${pkg.tokens.toLocaleString()} tokens for Xplain This`,
+              },
+              unit_amount: pkg.price,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: "payment",
+        success_url: `${process.env.REPLIT_DEV_DOMAIN || "http://localhost:5000"}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.REPLIT_DEV_DOMAIN || "http://localhost:5000"}/`,
+        metadata: {
+          userId: user.id,
+          packageId: pkg.id,
+          tokens: pkg.tokens.toString(),
+        },
+      });
+
+      res.json({ sessionId: session.id, url: session.url });
+    } catch (error) {
+      console.error("Create token checkout error:", error);
+      res.status(500).json({ message: "Failed to create checkout session" });
+    }
+  });
+
+  // POST /api/stripe/create-subscription-checkout - Create checkout session for premium subscription
+  app.post("/api/stripe/create-subscription-checkout", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const user = await storage.getUser(authReq.session.userId!);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if user already has an active subscription
+      const existingSubscription = await storage.getActiveSubscription(user.id);
+      if (existingSubscription) {
+        return res.status(400).json({ message: "User already has an active subscription" });
+      }
+
+      // Create Stripe checkout session for subscription
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: PREMIUM_SUBSCRIPTION.name,
+                description: "Unlimited answer saving and priority support",
+              },
+              unit_amount: PREMIUM_SUBSCRIPTION.price,
+              recurring: {
+                interval: PREMIUM_SUBSCRIPTION.interval,
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        mode: "subscription",
+        success_url: `${process.env.REPLIT_DEV_DOMAIN || "http://localhost:5000"}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.REPLIT_DEV_DOMAIN || "http://localhost:5000"}/`,
+        metadata: {
+          userId: user.id,
+        },
+      });
+
+      res.json({ sessionId: session.id, url: session.url });
+    } catch (error) {
+      console.error("Create subscription checkout error:", error);
+      res.status(500).json({ message: "Failed to create subscription checkout" });
+    }
+  });
+
+  // POST /api/stripe/webhook - Handle Stripe webhooks
+  app.post("/api/stripe/webhook", async (req: Request, res: Response) => {
+    const sig = req.headers["stripe-signature"];
+
+    if (!sig) {
+      return res.status(400).send("Missing stripe-signature header");
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      // For webhook verification, we need the raw body
+      // This is handled by express.raw() middleware in index.ts for this route
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      
+      if (webhookSecret) {
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      } else {
+        // For development without webhook secret
+        event = JSON.parse(req.body.toString());
+      }
+    } catch (err: any) {
+      console.error("Webhook signature verification failed:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    try {
+      // Handle the event
+      switch (event.type) {
+        case "checkout.session.completed": {
+          const session = event.data.object as Stripe.Checkout.Session;
+          
+          if (session.mode === "payment") {
+            // Token purchase completed
+            const userId = session.metadata?.userId;
+            const packageId = session.metadata?.packageId;
+            const tokens = parseInt(session.metadata?.tokens || "0");
+            const paymentIntentId = session.payment_intent as string || session.id;
+
+            if (!userId || !packageId || !tokens) {
+              console.error("Missing metadata in checkout session");
+              break;
+            }
+
+            // Check for idempotency - don't process duplicate webhooks
+            const existingPurchase = await storage.getTokenPurchaseByStripeId(paymentIntentId);
+            if (existingPurchase) {
+              console.log(`Payment ${paymentIntentId} already processed, skipping`);
+              break;
+            }
+
+            const pkg = TOKEN_PACKAGES.find(p => p.id === packageId);
+            if (!pkg) {
+              console.error("Invalid package ID in metadata");
+              break;
+            }
+
+            // Record token purchase
+            await storage.createTokenPurchase({
+              userId,
+              amount: tokens,
+              priceUsd: pkg.price / 100,
+              stripePaymentIntentId: paymentIntentId,
+            });
+
+            // Add tokens to user balance
+            const user = await storage.getUser(userId);
+            if (user) {
+              await storage.updateUser(userId, {
+                tokenBalance: user.tokenBalance + tokens,
+              });
+            }
+
+            console.log(`Token purchase completed for user ${userId}: ${tokens} tokens`);
+          } else if (session.mode === "subscription") {
+            // Subscription created
+            const userId = session.metadata?.userId;
+            const subscriptionId = session.subscription as string;
+
+            if (!userId || !subscriptionId) {
+              console.error("Missing metadata in subscription session");
+              break;
+            }
+
+            // Check for idempotency - don't process duplicate webhooks
+            const existingSubscription = await storage.getSubscriptionByStripeId(subscriptionId);
+            if (existingSubscription) {
+              console.log(`Subscription ${subscriptionId} already created, skipping`);
+              break;
+            }
+
+            // Fetch the actual subscription from Stripe to get accurate period data
+            const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+            // Create subscription record with accurate period data
+            await storage.createSubscription({
+              userId,
+              stripeSubscriptionId: subscriptionId,
+              status: stripeSubscription.status as "active" | "canceled" | "past_due" | "trialing" | "incomplete",
+              plan: "premium_monthly",
+              currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
+              currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+            });
+
+            console.log(`Subscription created for user ${userId} (${stripeSubscription.status})`);
+          }
+          break;
+        }
+
+        case "customer.subscription.updated": {
+          const subscription = event.data.object as Stripe.Subscription;
+          
+          // Update subscription status
+          const dbSubscription = await storage.getSubscriptionByStripeId(subscription.id);
+          if (dbSubscription) {
+            await storage.updateSubscription(dbSubscription.id, {
+              status: subscription.status as "active" | "canceled" | "past_due" | "trialing" | "incomplete",
+              currentPeriodStart: new Date(subscription.current_period_start * 1000),
+              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            });
+            console.log(`Subscription ${subscription.id} updated to status: ${subscription.status}`);
+          }
+          break;
+        }
+
+        case "customer.subscription.deleted": {
+          const subscription = event.data.object as Stripe.Subscription;
+          
+          // Cancel subscription
+          const dbSubscription = await storage.getSubscriptionByStripeId(subscription.id);
+          if (dbSubscription) {
+            await storage.updateSubscription(dbSubscription.id, {
+              status: "canceled",
+            });
+            console.log(`Subscription ${subscription.id} canceled`);
+          }
+          break;
+        }
+
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Webhook handler error:", error);
+      res.status(500).json({ message: "Webhook handler failed" });
     }
   });
 
