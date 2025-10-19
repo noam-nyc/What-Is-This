@@ -33,7 +33,8 @@ Preferred communication style: Simple, everyday language.
 **Key User Flows**
 1. **Onboarding**: Terms acceptance → Age verification → Language selection
 2. **Analysis**: Input method selection (camera/upload/URL) → Token cost preview → AI analysis → Results display
-3. **Monetization**: Free tier (3 analyses) → Token purchase or Premium subscription ($4.99/month)
+3. **Monetization**: Free tier (3 analyses/month) → Apple IAP subscriptions with daily limits
+4. **Password Reset**: Forgot password → Email with token link → Reset password → Auto-redirect to login
 
 ### Backend Architecture
 
@@ -67,11 +68,11 @@ Preferred communication style: Simple, everyday language.
 - Token cost calculation with 100% markup over OpenAI pricing ($0.01 input/$0.03 output per 1K tokens)
 - Usage tracking for billing and quota management
 
-**Payment Processing**
-- **Stripe** for payment processing and subscription management
-- API version: 2024-09-30.acacia (stable release)
-- Webhook integration for payment status updates
-- Products: Token packages ($4.99-$79.99) and Premium subscription ($4.99/month unlimited)
+**Payment Processing (DEPRECATED - Now using Apple IAP)**
+- Previously used Stripe - now migrated to Apple In-App Purchases
+- Apple IAP receipt validation endpoint: POST /api/iap/validate-receipt
+- 4 subscription tiers: Weekly ($2.99), Premium ($5.99), Pro ($12.99), Annual ($99.99)
+- Daily analysis limits enforced by tier with UTC midnight reset
 
 **Authentication**
 - **bcrypt** for password hashing (cost factor managed in environment)
@@ -93,8 +94,14 @@ Preferred communication style: Simple, everyday language.
 - `DATABASE_URL`: PostgreSQL connection string
 - `SESSION_SECRET`: Secret for session encryption
 - `OPENAI_API_KEY`: OpenAI API authentication
-- `STRIPE_SECRET_KEY`: Stripe API authentication
+- `RESEND_API_KEY`: Resend API for transactional emails (password reset)
 - `NODE_ENV`: Environment indicator (development/production)
+
+**Email Service**
+- **Resend** integration for transactional emails
+- Password reset emails with branded HTML templates
+- 1-hour token expiry for security
+- Anti-enumeration protection (always returns success regardless of email existence)
 
 **Security & Safety Features**
 - Age verification system (13+ minimum age, parental consent required for under-18)
