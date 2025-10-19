@@ -8,10 +8,21 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Camera, Upload, Link2, AlertTriangle, Phone, Coins, CreditCard, Save, Check, Globe } from "lucide-react";
+import { Camera, Upload, Link2, AlertTriangle, Phone, Coins, CreditCard, Save, Check, Globe, Info, BookOpen, Wrench, History, ShoppingCart, Shield } from "lucide-react";
 import type { User } from "@shared/schema";
 import DailyUsageIndicator from "@/components/DailyUsageIndicator";
 import IntentSelector, { type AnalysisIntent } from "@/components/IntentSelector";
+
+// Intent labels and icons
+const INTENT_INFO: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  general: { label: "General Info", icon: Info, color: "bg-blue-500/10 text-blue-700 border-blue-200" },
+  use: { label: "How to Use", icon: BookOpen, color: "bg-green-500/10 text-green-700 border-green-200" },
+  maintain: { label: "Maintenance", icon: Wrench, color: "bg-purple-500/10 text-purple-700 border-purple-200" },
+  fix: { label: "Fix/Troubleshoot", icon: AlertTriangle, color: "bg-orange-500/10 text-orange-700 border-orange-200" },
+  history: { label: "History", icon: History, color: "bg-indigo-500/10 text-indigo-700 border-indigo-200" },
+  price: { label: "Price/Where to Buy", icon: ShoppingCart, color: "bg-pink-500/10 text-pink-700 border-pink-200" },
+  safety: { label: "Safety Check", icon: Shield, color: "bg-red-500/10 text-red-700 border-red-200" },
+};
 
 const LANGUAGES = [
   { code: "en", name: "English" },
@@ -360,7 +371,18 @@ export default function Analyze() {
             <Card>
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-3">
-                  <h3 className="text-2xl font-semibold">Explanation</h3>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h3 className="text-2xl font-semibold">Explanation</h3>
+                    {INTENT_INFO[selectedIntent] && (() => {
+                      const IntentIcon = INTENT_INFO[selectedIntent].icon;
+                      return (
+                        <Badge variant="outline" className={`text-sm ${INTENT_INFO[selectedIntent].color}`} data-testid="badge-intent">
+                          <IntentIcon className="h-4 w-4 mr-1" />
+                          {INTENT_INFO[selectedIntent].label}
+                        </Badge>
+                      );
+                    })()}
+                  </div>
                   {isPremium && (
                     <Button
                       variant="outline"
