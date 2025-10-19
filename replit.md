@@ -8,7 +8,27 @@ What Is This? is an accessibility-first web application designed to help seniors
 
 Preferred communication style: Simple, everyday language.
 
-## Recent Updates (January 2025)
+## Recent Updates (October 2025)
+
+### Latest Changes (October 19, 2025 - Final Deployment Prep)
+
+**Language Support Expansion**
+- Added 3 new languages: Italian (it), Russian (ru), Hebrew (he)
+- Total supported: 11 languages (EN, ES, ZH, FR, DE, IT, PT, RU, HE, JA, KO)
+- Right-to-left (RTL) support for Hebrew
+
+**Terms of Service & Legal**
+- Comprehensive Terms page with AI-specific disclaimers
+- Enhanced liability limitations and "AS IS" warranty disclaimers
+- Special safety intent warnings (critical for "Is it safe?" feature)
+- Indemnification clauses and acceptable use policies
+- Route added: `/terms`
+
+**Deployment Documentation**
+- Complete PWA deployment guide (DEPLOYMENT_GUIDE.md)
+- Email domain setup instructions (EMAIL_DOMAIN_SETUP.md)
+- Beta testing recruitment strategies (BETA_TESTING_GUIDE.md)
+- Financial analysis with funding requirements (FINANCIAL_ANALYSIS.md)
 
 ### Critical Features Completed (October 19, 2025)
 1. **Profitable Pricing Structure** - Adjusted to achieve 30%+ profit margins:
@@ -143,11 +163,25 @@ Preferred communication style: Simple, everyday language.
 - **TSX** for TypeScript execution in development
 
 **Environment Variables Required**
-- `DATABASE_URL`: PostgreSQL connection string
+- `DATABASE_URL`: PostgreSQL connection string (Neon serverless)
 - `SESSION_SECRET`: Secret for session encryption
-- `OPENAI_API_KEY`: OpenAI API authentication
-- `RESEND_API_KEY`: Resend API for transactional emails (password reset)
+- `OPENAI_API_KEY`: OpenAI API authentication ($0.03/analysis cost)
+- `RESEND_API_KEY`: Resend API for transactional emails (free tier: 3K/month)
 - `NODE_ENV`: Environment indicator (development/production)
+
+**Deployment Resources**
+- PWA Setup: See `DEPLOYMENT_GUIDE.md`
+- Email Configuration: See `EMAIL_DOMAIN_SETUP.md`
+- Beta Testing: See `BETA_TESTING_GUIDE.md`
+- Funding Analysis: See `FINANCIAL_ANALYSIS.md`
+
+**Financial Overview (Year 1 Bootstrap)**
+- Personnel: $92,400/year (founder + VA)
+- Technology: $3,600/year (OpenAI dominant variable cost)
+- Marketing: $6,600/year (organic-first)
+- **Total OpEx**: $111,000/year
+- **Break-even**: 1,530 paid users (~3,825 total users)
+- **Target Margins**: 25-39% across all paid tiers
 
 **Email Service**
 - **Resend** integration for transactional emails

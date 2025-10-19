@@ -21,6 +21,7 @@ import SavedAnswers from "@/pages/saved-answers";
 import Account from "@/pages/account";
 import Help from "@/pages/help";
 import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms";
 import NotFound from "@/pages/not-found";
 import { useLocation } from "wouter";
 
@@ -118,6 +119,7 @@ function AuthenticatedApp() {
         <Route path="/account" component={Account} />
         <Route path="/help" component={Help} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
+        <Route path="/terms" component={TermsOfService} />
         <Route path="/:rest*" component={NotFound} />
       </Switch>
     </div>

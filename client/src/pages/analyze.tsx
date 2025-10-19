@@ -33,7 +33,10 @@ const LANGUAGES = [
   { code: "zh", name: "中文" },
   { code: "fr", name: "Français" },
   { code: "de", name: "Deutsch" },
+  { code: "it", name: "Italiano" },
   { code: "pt", name: "Português" },
+  { code: "ru", name: "Русский" },
+  { code: "he", name: "עברית" },
   { code: "ja", name: "日本語" },
   { code: "ko", name: "한국어" },
 ];
