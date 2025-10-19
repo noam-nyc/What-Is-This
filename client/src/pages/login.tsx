@@ -133,8 +133,8 @@ export default function Login() {
               <div className="flex justify-end">
                 <Button
                   type="button"
-                  variant="link"
-                  className="text-base px-0"
+                  variant="ghost"
+                  className="text-base px-0 h-auto"
                   onClick={() => setLocation("/forgot-password")}
                   data-testid="button-forgot-password"
                 >

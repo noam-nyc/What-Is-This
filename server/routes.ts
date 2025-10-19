@@ -604,10 +604,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Log failed attempt due to insufficient balance
           await storage.createUsageLog({
             userId: user.id,
-            apiEndpoint: "/api/analyze",
+            action: "analyze_image_failed",
             tokensUsed: totalTokens,
-            costUsd,
-            success: false,
+            cost: costUsd.toFixed(4),
           });
 
           return res.status(402).json({ 
@@ -622,10 +621,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log successful usage
       await storage.createUsageLog({
         userId: user.id,
-        apiEndpoint: "/api/analyze",
+        action: "analyze_image",
         tokensUsed: totalTokens,
-        costUsd,
-        success: true,
+        cost: costUsd.toFixed(4),
       });
 
       // Increment daily analysis count (use refreshed user count to avoid race conditions)
@@ -662,10 +660,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (authReq.session.userId) {
         await storage.createUsageLog({
           userId: authReq.session.userId,
-          apiEndpoint: "/api/analyze",
+          action: "analyze_image_error",
           tokensUsed: 0,
-          costUsd: 0,
-          success: false,
+          cost: "0",
         });
       }
 
