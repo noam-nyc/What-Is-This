@@ -59,6 +59,7 @@ export const savedAnswers = pgTable("saved_answers", {
   preview: text("preview"),
   data: jsonb("data").notNull(), // full explanation data
   imageUrl: text("image_url"), // optional - could store image URLs
+  analysisIntent: text("analysis_intent").notNull().default("general"), // general, use, maintain, fix, history, price, safety
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -68,6 +69,7 @@ export const usageLogs = pgTable("usage_logs", {
   userId: varchar("user_id").references(() => users.id),
   action: text("action").notNull(), // analyze_image, ask_question, etc.
   contentType: text("content_type"), // product, document, food
+  analysisIntent: text("analysis_intent"), // general, use, maintain, fix, history, price, safety
   tokensUsed: integer("tokens_used").default(0),
   openaiTokens: integer("openai_tokens").default(0), // actual OpenAI tokens
   cost: decimal("cost", { precision: 10, scale: 4 }).default("0"), // actual cost in USD
