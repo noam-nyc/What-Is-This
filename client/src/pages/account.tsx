@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,10 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { User, CreditCard, Coins, Package, CheckCircle2, LogOut, ShoppingCart } from "lucide-react";
 import type { User as UserType } from "@shared/schema";
+import LanguageSelector from "@/components/LanguageSelector";
 
 interface TokenPurchase {
   id: number;
@@ -36,6 +49,8 @@ export default function Account() {
   const [, setLocation] = useLocation();
   const [purchasingTokens, setPurchasingTokens] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
 
   const { data: user, isLoading: loadingUser } = useQuery<UserType>({
     queryKey: ["/api/auth/user"],
@@ -91,6 +106,43 @@ export default function Account() {
     setSubscribing(false);
   };
 
+  const deleteAccountMutation = useMutation({
+    mutationFn: async (password: string) => {
+      const response = await apiRequest("DELETE", "/api/auth/account", {
+        password,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Account Deleted",
+        description: "Your account and all data have been permanently deleted",
+      });
+      // Clear all queries and redirect to login
+      queryClient.clear();
+      window.location.href = "/login";
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Deletion Failed",
+        description: error.message || "Failed to delete account",
+      });
+    },
+  });
+
+  const handleDeleteAccount = () => {
+    if (!deletePassword) {
+      toast({
+        variant: "destructive",
+        title: "Password Required",
+        description: "Please enter your password to confirm account deletion",
+      });
+      return;
+    }
+    deleteAccountMutation.mutate(deletePassword);
+  };
+
   if (loadingUser) {
     return (
       <div className="min-h-screen bg-background p-4">
@@ -141,6 +193,9 @@ export default function Account() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Language Preference */}
+        {user && <LanguageSelector user={user} />}
 
         {/* Subscription Status */}
         <Card>
@@ -204,7 +259,82 @@ export default function Account() {
             )}
           </CardContent>
         </Card>
+
+        {/* Legal & Privacy Links */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col gap-3">
+              <Button
+                variant="ghost"
+                className="h-12 text-lg justify-start"
+                onClick={() => setLocation("/privacy-policy")}
+                data-testid="button-privacy-policy"
+              >
+                Privacy Policy
+              </Button>
+              <Button
+                variant="ghost"
+                className="h-12 text-lg justify-start text-destructive hover:text-destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+                data-testid="button-delete-account"
+              >
+                Delete Account
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl">Delete Account Permanently?</AlertDialogTitle>
+            <AlertDialogDescription className="text-base space-y-3">
+              <p>This action cannot be undone. This will permanently delete your account and remove all your data including:</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Your profile and account information</li>
+                <li>All saved analyses</li>
+                <li>Usage history and analytics</li>
+                <li>Subscription data (you must cancel in App Store separately)</li>
+              </ul>
+              <p className="font-semibold mt-4">Please enter your password to confirm deletion:</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-4">
+            <Label htmlFor="delete-password">Password</Label>
+            <Input
+              id="delete-password"
+              type="password"
+              placeholder="Enter your password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              className="h-12 text-lg"
+              data-testid="input-delete-password"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="h-12 text-lg"
+              onClick={() => {
+                setDeletePassword("");
+                setDeleteDialogOpen(false);
+              }}
+              data-testid="button-cancel-delete"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="h-12 text-lg bg-destructive hover:bg-destructive/90"
+              onClick={handleDeleteAccount}
+              disabled={deleteAccountMutation.isPending}
+              data-testid="button-confirm-delete"
+            >
+              {deleteAccountMutation.isPending ? "Deleting..." : "Delete My Account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

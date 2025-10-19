@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   subscriptionTier: text("subscription_tier").notNull().default("free"), // free, weekly, premium, pro, annual
   dailyAnalysisCount: integer("daily_analysis_count").notNull().default(0),
   dailyLimitResetDate: timestamp("daily_limit_reset_date").defaultNow(),
+  preferredLanguage: text("preferred_language").notNull().default("en"), // en, es, zh, fr, de, pt, ja, ko
   resetToken: text("reset_token"),
   resetTokenExpiry: timestamp("reset_token_expiry"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/auth/profile", requireAuth, async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthenticatedRequest;
-      const { email, phone, address, currentPassword, newPassword } = req.body;
+      const { email, phone, address, preferredLanguage, currentPassword, newPassword } = req.body;
 
       const user = await storage.getUser(authReq.session.userId!);
       if (!user) {
@@ -253,9 +253,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updates.email = email;
       }
 
-      // Update phone and address
+      // Update phone, address, and language
       if (phone !== undefined) updates.phone = phone;
       if (address !== undefined) updates.address = address;
+      if (preferredLanguage !== undefined) {
+        const validLanguages = ['en', 'es', 'zh', 'fr', 'de', 'pt', 'ja', 'ko'];
+        if (validLanguages.includes(preferredLanguage)) {
+          updates.preferredLanguage = preferredLanguage;
+        }
+      }
 
       // Update password (if provided)
       if (newPassword) {
@@ -283,6 +289,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Update profile error:", error);
       res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // DELETE /api/auth/account - Delete user account (GDPR requirement)
+  app.delete("/api/auth/account", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const { password } = req.body;
+
+      if (!password) {
+        return res.status(400).json({ message: "Password confirmation required" });
+      }
+
+      const user = await storage.getUser(authReq.session.userId!);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Verify password before deletion
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        return res.status(401).json({ message: "Incorrect password" });
+      }
+
+      // Delete all user data
+      const deleted = await storage.deleteUser(user.id);
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete account" });
+      }
+
+      // Destroy session
+      authReq.session.destroy((err: any) => {
+        if (err) {
+          console.error("Session destruction error:", err);
+        }
+      });
+
+      res.json({ message: "Account deleted successfully" });
+    } catch (error) {
+      console.error("Delete account error:", error);
+      res.status(500).json({ message: "Failed to delete account" });
     }
   });
 
@@ -402,10 +449,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/saved-answers", requireAuth, async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthenticatedRequest;
-      const { question, answer, language, imageUrl } = req.body;
+      const { title, preview, type, data, imageUrl } = req.body;
 
-      if (!question || !answer) {
-        return res.status(400).json({ message: "Question and answer required" });
+      if (!title || !data) {
+        return res.status(400).json({ message: "Title and data required" });
       }
 
       // Check if user has premium subscription
@@ -421,9 +468,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save the answer
       const savedAnswer = await storage.createSavedAnswer({
         userId: authReq.session.userId!,
-        question,
-        answer,
-        language: language || "en",
+        type: type || "product",
+        title,
+        preview: preview || null,
+        data,
         imageUrl: imageUrl || null,
       });
 

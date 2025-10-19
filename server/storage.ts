@@ -27,6 +27,7 @@ export interface IStorage {
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
   updateUserTokenBalance(id: string, newBalance: number): Promise<void>;
   updateUserFreeAnswers(id: string, remaining: number): Promise<void>;
+  deleteUser(id: string): Promise<boolean>;
   
   // Subscription operations
   getActiveSubscription(userId: string): Promise<Subscription | undefined>;
@@ -102,6 +103,28 @@ export class DatabaseStorage implements IStorage {
         lastFreeAnswerReset: new Date()
       })
       .where(eq(users.id, id));
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    try {
+      // Use transaction to ensure all-or-nothing deletion
+      const result = await db.transaction(async (tx) => {
+        // Delete in order of foreign key dependencies
+        await tx.delete(usageLogs).where(eq(usageLogs.userId, id));
+        await tx.delete(savedAnswers).where(eq(savedAnswers.userId, id));
+        await tx.delete(tokenPurchases).where(eq(tokenPurchases.userId, id));
+        await tx.delete(subscriptions).where(eq(subscriptions.userId, id));
+        
+        // Finally delete the user and return the result
+        const deletedUsers = await tx.delete(users).where(eq(users.id, id)).returning();
+        return deletedUsers.length > 0;
+      });
+      
+      return result;
+    } catch (error) {
+      console.error("Delete user error:", error);
+      return false;
+    }
   }
 
   // Subscription operations
