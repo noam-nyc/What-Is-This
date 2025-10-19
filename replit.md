@@ -10,13 +10,38 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates (January 2025)
 
-### Critical Features Completed
+### Critical Features Completed (October 19, 2025)
+1. **Profitable Pricing Structure** - Adjusted to achieve 30%+ profit margins:
+   - Daily: $0.49/day (10 analyses) - 39% margin
+   - Weekly: $2.99/week (70 analyses) - 30% margin  
+   - Monthly: $12.99/month (300 analyses) - 31% margin
+   - Pro: $25.99/month (600 analyses) - 31% margin
+   - Annual: $144.99/year (3,650 analyses) - 25% margin
+   - All tiers exceed 25% minimum margin requirement based on $0.03 OpenAI cost per analysis
+
+2. **Image Quality Validation** - Client-side checks before OpenAI analysis:
+   - File size limits: 1KB minimum, 10MB maximum
+   - Minimum resolution: 640x480 pixels
+   - Brightness detection: Rejects images with avgBrightness < 20 (too dark)
+   - Blur detection: Laplacian variance threshold (rejects blurry photos)
+   - Validation integrated into file upload flow with user-friendly error messages
+   - URL images show quality check notice (validated during analysis)
+
+3. **AI Confidence Scoring** - All 8 intent prompts return confidence (0-100):
+   - OpenAI system prompts updated to include confidence field in JSON response
+   - Color-coded display: Green (80-100), Yellow (60-79), Red (0-59)
+   - Visual progress bars with descriptive text for seniors
+   - Confidence shown prominently in analyze results (always visible)
+   - Confidence badge in saved answers header (no expansion required)
+   - Full confidence details (progress bar + explanation) when answer expanded
+
+### Previous Features (January 2025)
 1. **Language Selection System** - 8-language support (EN, ES, ZH, FR, DE, PT, JA, KO) with backend integration and accessibility-first UI
 2. **Privacy Policy** - Comprehensive page covering GDPR, App Store requirements, AI disclaimers, data collection transparency
 3. **Account Deletion** - GDPR-compliant with password confirmation, transactional cascade deletion, session cleanup
 4. **Saved Answers Workflow** - Full CRUD implementation: view list, expand/collapse details, delete with confirmation, premium-gated access
 5. **Daily Usage Indicator** - Real-time usage tracking with backend integration, shows current/daily limit, progress bar, reset time (hidden for free tier)
-6. **Help & FAQ Content** - Comprehensive FAQ covering all features, correct pricing ($2.99-$99.99), daily limits (10/40/75/75), accurate language list
+6. **Help & FAQ Content** - Comprehensive FAQ covering all features, correct pricing, daily limits, accurate language list
 7. **Analysis Intent Selection (Refactored Jan 2025)** - Completely redesigned from technical categories to user-friendly plain language questions:
    - **3 FREE Intents**: "What is this?", "Where is it from?", "General Info"
    - **5 PREMIUM Intents**: "How to use it", "How to care for it", "Is it safe?", "How to fix it", "Where to buy one"

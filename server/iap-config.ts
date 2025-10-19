@@ -10,37 +10,45 @@ export const SUBSCRIPTION_TIERS = {
     monthlyLimit: 3, // 3 analyses per month total
     features: ["3 analyses per month", "All languages supported", "Safety alerts"],
   },
+  daily: {
+    name: "Daily",
+    price: 0.49,
+    interval: "day",
+    dailyLimit: 10,
+    monthlyLimit: null, // unlimited monthly, just daily cap
+    features: ["10 analyses per day", "All languages", "Safety alerts", "Premium intents"],
+  },
   weekly: {
     name: "Weekly",
     price: 2.99,
     interval: "week",
     dailyLimit: 10,
     monthlyLimit: null, // unlimited monthly, just daily cap
-    features: ["10 analyses per day", "All languages", "Safety alerts", "Priority support"],
+    features: ["10 analyses per day", "All languages", "Safety alerts", "Premium intents", "Save answers"],
   },
   premium: {
-    name: "Premium",
-    price: 5.99,
+    name: "Monthly",
+    price: 12.99,
     interval: "month",
-    dailyLimit: 40,
+    dailyLimit: 10,
     monthlyLimit: null,
-    features: ["40 analyses per day", "Save answers", "All languages", "Priority support"],
+    features: ["10 analyses per day", "Save answers", "All languages", "Premium intents", "Priority support"],
   },
   pro: {
     name: "Pro",
-    price: 12.99,
+    price: 25.99,
     interval: "month",
-    dailyLimit: 75,
+    dailyLimit: 20,
     monthlyLimit: null,
-    features: ["75 analyses per day", "Save answers", "All languages", "Priority support", "Advanced features"],
+    features: ["20 analyses per day", "Save answers", "All languages", "Premium intents", "Priority support", "Advanced features"],
   },
   annual: {
     name: "Annual",
-    price: 99.99,
+    price: 144.99,
     interval: "year",
-    dailyLimit: 75,
+    dailyLimit: 10,
     monthlyLimit: null,
-    features: ["75 analyses per day", "Save answers", "All languages", "Priority support", "Advanced features", "Best value"],
+    features: ["10 analyses per day", "Save answers", "All languages", "Premium intents", "Priority support", "Best value"],
   },
 } as const;
 

@@ -249,25 +249,29 @@ export default function Account() {
             ) : (
               <>
                 <p className="text-lg text-muted-foreground mb-4">
-                  Choose from 4 subscription tiers to unlock daily analyses
+                  Choose from 5 subscription tiers to unlock daily analyses
                 </p>
                 <div className="space-y-3">
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-semibold text-lg">Daily - $0.49/day</h4>
+                    <p className="text-sm text-muted-foreground">10 analyses per day</p>
+                  </div>
                   <div className="border rounded-lg p-4">
                     <h4 className="font-semibold text-lg">Weekly - $2.99/week</h4>
                     <p className="text-sm text-muted-foreground">10 analyses per day</p>
                   </div>
                   <div className="border rounded-lg p-4 border-primary">
-                    <h4 className="font-semibold text-lg">Premium - $5.99/month</h4>
-                    <p className="text-sm text-muted-foreground">40 analyses per day</p>
+                    <h4 className="font-semibold text-lg">Monthly - $12.99/month</h4>
+                    <p className="text-sm text-muted-foreground">10 analyses per day</p>
                     <Badge className="mt-2">Most Popular</Badge>
                   </div>
                   <div className="border rounded-lg p-4">
-                    <h4 className="font-semibold text-lg">Pro - $12.99/month</h4>
-                    <p className="text-sm text-muted-foreground">75 analyses per day</p>
+                    <h4 className="font-semibold text-lg">Pro - $25.99/month</h4>
+                    <p className="text-sm text-muted-foreground">20 analyses per day</p>
                   </div>
                   <div className="border rounded-lg p-4">
-                    <h4 className="font-semibold text-lg">Annual - $99.99/year</h4>
-                    <p className="text-sm text-muted-foreground">75 analyses per day · Best value</p>
+                    <h4 className="font-semibold text-lg">Annual - $144.99/year</h4>
+                    <p className="text-sm text-muted-foreground">10 analyses per day · Best value</p>
                   </div>
                 </div>
                 <Alert>

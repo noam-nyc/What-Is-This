@@ -24,8 +24,9 @@ export default function DailyUsageIndicator({
   const remaining = Math.max(0, dailyLimit - currentCount);
   
   const tierNames: Record<string, string> = {
+    daily: "Daily Plan",
     weekly: "Weekly Plan",
-    premium: "Premium Plan",
+    premium: "Monthly Plan",
     pro: "Pro Plan",
     annual: "Annual Plan",
   };

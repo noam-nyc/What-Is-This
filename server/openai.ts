@@ -37,6 +37,7 @@ export const SYSTEM_PROMPTS = {
 4. species (if it's a plant or animal, what species?)
 5. fileType (if it's a document, what type of document?)
 6. basicDescription (a simple one-sentence explanation)
+7. confidence (0-100: rate how confident you are in this identification. 100 = absolutely certain, 80-99 = very confident, 60-79 = fairly confident, 40-59 = somewhat uncertain, 0-39 = very uncertain)
 
 Use simple, clear language (6th grade reading level). Be specific and accurate. Format as JSON.`,
 
@@ -47,6 +48,7 @@ Use simple, clear language (6th grade reading level). Be specific and accurate. 
 4. madeOf (what materials or ingredients is it made from?)
 5. history (brief background about this thing's history)
 6. culturalInfo (any interesting cultural context or significance)
+7. confidence (0-100: rate how confident you are about this origin information. 100 = absolutely certain, 80-99 = very confident, 60-79 = fairly confident, 40-59 = somewhat uncertain, 0-39 = very uncertain)
 
 Make it informative but easy to understand. Use simple language. Format as JSON.`,
 
@@ -57,6 +59,7 @@ Make it informative but easy to understand. Use simple language. Format as JSON.
 4. definitions (explain any technical or complex terms in simple words)
 5. context (when and why would someone use this or encounter it?)
 6. relatedThings (what other things is this similar to?)
+7. confidence (0-100: rate how confident you are in this explanation. 100 = absolutely certain, 80-99 = very confident, 60-79 = fairly confident, 40-59 = somewhat uncertain, 0-39 = very uncertain)
 
 Use the simplest possible language. Avoid jargon. Format as JSON.`,
 
@@ -104,6 +107,7 @@ Use simple language. Format as JSON.`,
 4. usage (when and why you would use this)
 5. tips (helpful usage tips and best practices)
 6. commonMistakes (things people often do wrong)
+7. confidence (0-100: rate how confident you are in these instructions. 100 = absolutely certain, 80-99 = very confident, 60-79 = fairly confident, 40-59 = somewhat uncertain, 0-39 = very uncertain)
 
 Use simple, clear language (6th grade reading level). Be thorough but easy to understand. Format as JSON.`,
 
@@ -114,6 +118,7 @@ Use simple, clear language (6th grade reading level). Be thorough but easy to un
 4. storage (how to store it properly when not in use)
 5. whatToAvoid (things that could damage it)
 6. lifespan (how long it typically lasts with proper care)
+7. confidence (0-100: rate how confident you are in these care instructions. 100 = absolutely certain, 80-99 = very confident, 60-79 = fairly confident, 40-59 = somewhat uncertain, 0-39 = very uncertain)
 
 Use simple language that anyone can follow. Format as JSON.`,
 
@@ -126,6 +131,7 @@ Use simple language that anyone can follow. Format as JSON.`,
 6. healthHazards (any health risks from using, eating, or touching this)
 7. safetyPrecautions (how to stay safe when using this)
 8. whoShouldAvoid (who should not use this? children, pregnant women, etc.)
+9. confidence (0-100: rate how confident you are in this safety assessment. 100 = absolutely certain, 80-99 = very confident, 60-79 = fairly confident, 40-59 = somewhat uncertain, 0-39 = very uncertain)
 
 Be clear and direct about safety risks. Use simple language. If something is dangerous, say so clearly. Format as JSON.`,
 
@@ -136,6 +142,7 @@ Be clear and direct about safety risks. Use simple language. If something is dan
 4. repairTips (step-by-step fixes for common problems)
 5. toolsNeeded (what tools you need to fix it)
 6. whenToCallPro (when you should get professional help instead)
+7. confidence (0-100: rate how confident you are in these repair tips. 100 = absolutely certain, 80-99 = very confident, 60-79 = fairly confident, 40-59 = somewhat uncertain, 0-39 = very uncertain)
 
 Use clear, simple language. Be specific with steps. Format as JSON.`,
 
@@ -146,6 +153,7 @@ Use clear, simple language. Be specific with steps. Format as JSON.`,
 4. marketplaces (online marketplaces like Amazon, eBay, etc.)
 5. alternatives (similar or cheaper options)
 6. buyingTips (advice on getting the best deal)
+7. confidence (0-100: rate how confident you are about this pricing and availability information. 100 = absolutely certain, 80-99 = very confident, 60-79 = fairly confident, 40-59 = somewhat uncertain, 0-39 = very uncertain)
 
 Use simple language. Be practical and specific. Format as JSON.`,
 

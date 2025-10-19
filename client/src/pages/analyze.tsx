@@ -6,9 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Camera, Upload, Link2, AlertTriangle, Phone, Coins, CreditCard, Save, Check, Globe, HelpCircle, MapPin, MessageCircle, BookOpen, Sparkles, Shield, Wrench, ShoppingCart } from "lucide-react";
+import { Camera, Upload, Link2, AlertTriangle, Phone, Coins, CreditCard, Save, Check, Globe, HelpCircle, MapPin, MessageCircle, BookOpen, Sparkles, Shield, Wrench, ShoppingCart, TrendingUp } from "lucide-react";
 import type { User } from "@shared/schema";
 import DailyUsageIndicator from "@/components/DailyUsageIndicator";
 import IntentSelector from "@/components/IntentSelector";
@@ -40,6 +41,7 @@ const LANGUAGES = [
 interface AnalysisResult {
   contentType?: string;
   explanation?: string;
+  confidence?: number;
   product?: {
     name: string;
     description: string;
@@ -88,22 +90,167 @@ export default function Analyze() {
     queryKey: ["/api/usage/daily"],
   });
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const validateImageQuality = async (file: File, dataUrl: string): Promise<{ valid: boolean; error?: string }> => {
+    // Check file size (max 10MB)
+    const maxSizeMB = 10;
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      return { valid: false, error: `Image too large. Maximum size is ${maxSizeMB}MB` };
+    }
+
+    // Check minimum file size (too small = likely corrupted)
+    const minSizeBytes = 1024; // 1KB
+    if (file.size < minSizeBytes) {
+      return { valid: false, error: "Image file is too small or corrupted" };
+    }
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          resolve({ valid: false, error: "Unable to process image" });
+          return;
+        }
+
+        // Check minimum resolution
+        const minWidth = 640;
+        const minHeight = 480;
+        if (img.width < minWidth || img.height < minHeight) {
+          resolve({ valid: false, error: `Image too small. Minimum size is ${minWidth}x${minHeight} pixels` });
+          return;
+        }
+
+        // Resize for quality checks (use smaller size for performance)
+        const maxDim = 800;
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = (height * maxDim) / width;
+            width = maxDim;
+          } else {
+            width = (width * maxDim) / height;
+            height = maxDim;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const pixels = imageData.data;
+        
+        // Check brightness (detect very dark images)
+        let totalBrightness = 0;
+        for (let i = 0; i < pixels.length; i += 4) {
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          totalBrightness += (r + g + b) / 3;
+        }
+        const avgBrightness = totalBrightness / (pixels.length / 4);
+        
+        if (avgBrightness < 20) {
+          resolve({ valid: false, error: "Image is too dark. Please use better lighting" });
+          return;
+        }
+
+        // Check for blur using edge detection (Laplacian variance)
+        const gray: number[] = [];
+        for (let i = 0; i < pixels.length; i += 4) {
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          gray.push((r + g + b) / 3);
+        }
+
+        let variance = 0;
+        const laplacianKernel = [0, -1, 0, -1, 4, -1, 0, -1, 0];
+        const w = width;
+        const h = height;
+
+        for (let y = 1; y < h - 1; y++) {
+          for (let x = 1; x < w - 1; x++) {
+            let sum = 0;
+            for (let ky = -1; ky <= 1; ky++) {
+              for (let kx = -1; kx <= 1; kx++) {
+                const idx = (y + ky) * w + (x + kx);
+                const kernelIdx = (ky + 1) * 3 + (kx + 1);
+                sum += gray[idx] * laplacianKernel[kernelIdx];
+              }
+            }
+            variance += sum * sum;
+          }
+        }
+        
+        variance = variance / ((w - 2) * (h - 2));
+        
+        // Blur threshold (lower = more blurry)
+        const blurThreshold = 100;
+        if (variance < blurThreshold) {
+          resolve({ valid: false, error: "Image appears blurry. Please use a clearer photo" });
+          return;
+        }
+
+        resolve({ valid: true });
+      };
+
+      img.onerror = () => {
+        resolve({ valid: false, error: "Unable to load image. File may be corrupted" });
+      };
+
+      img.src = dataUrl;
+    });
+  };
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedImage(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+      reader.onloadend = async () => {
+        const dataUrl = reader.result as string;
+        
+        // Validate image quality
+        const validation = await validateImageQuality(file, dataUrl);
+        
+        if (!validation.valid) {
+          toast({
+            variant: "destructive",
+            title: "Image Quality Issue",
+            description: validation.error || "Please try a different image",
+          });
+          // Reset file input
+          e.target.value = '';
+          return;
+        }
+
+        setSelectedImage(file);
+        setImagePreview(dataUrl);
+        
+        toast({
+          title: "Image loaded",
+          description: "Image quality looks good! Ready to analyze.",
+        });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleUrlSubmit = () => {
-    if (imageUrl) {
-      setImagePreview(imageUrl);
-    }
+  const handleUrlSubmit = async () => {
+    if (!imageUrl) return;
+
+    // For URL images, we can't validate quality before loading
+    // But we set preview so user can see it
+    setImagePreview(imageUrl);
+    
+    toast({
+      title: "URL loaded",
+      description: "Image loaded from URL. Quality will be checked during analysis.",
+    });
   };
 
   const handleAnalyze = async () => {
@@ -410,6 +557,45 @@ export default function Analyze() {
                 <p className="text-lg leading-relaxed" data-testid="text-explanation">
                   {result.explanation}
                 </p>
+
+                {/* Confidence Score */}
+                {result.confidence !== undefined && (
+                  <div className="border-t pt-4 mt-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <TrendingUp className="w-5 h-5 text-muted-foreground" />
+                      <h4 className="font-semibold text-lg">Confidence</h4>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-medium" data-testid="text-confidence-value">
+                          {result.confidence}% confident
+                        </span>
+                        <Badge 
+                          variant={result.confidence >= 80 ? "default" : result.confidence >= 60 ? "secondary" : "destructive"}
+                          data-testid="badge-confidence-level"
+                        >
+                          {result.confidence >= 80 ? "Very Confident" : result.confidence >= 60 ? "Fairly Confident" : "Uncertain"}
+                        </Badge>
+                      </div>
+                      <Progress 
+                        value={result.confidence} 
+                        className={`h-3 ${
+                          result.confidence >= 80 ? "bg-green-200 dark:bg-green-900 [&>div]:bg-green-600" : 
+                          result.confidence >= 60 ? "bg-yellow-200 dark:bg-yellow-900 [&>div]:bg-yellow-600" : 
+                          "bg-red-200 dark:bg-red-900 [&>div]:bg-red-600"
+                        }`}
+                        data-testid="progress-confidence"
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        {result.confidence >= 80 
+                          ? "The AI is very confident about this answer." 
+                          : result.confidence >= 60 
+                          ? "The AI is fairly confident, but there may be some uncertainty."
+                          : "The AI is uncertain about this answer. Please verify independently."}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {result.product && (
                   <div className="border-t pt-4 mt-4">

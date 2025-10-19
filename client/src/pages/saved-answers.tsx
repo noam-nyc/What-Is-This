@@ -15,9 +15,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Save, Trash2, CreditCard, AlertCircle, ArrowLeft, Calendar, ImageIcon, HelpCircle, MapPin, MessageCircle, BookOpen, Sparkles, Shield, Wrench, ShoppingCart } from "lucide-react";
+import { Save, Trash2, CreditCard, AlertCircle, ArrowLeft, Calendar, ImageIcon, HelpCircle, MapPin, MessageCircle, BookOpen, Sparkles, Shield, Wrench, ShoppingCart, TrendingUp } from "lucide-react";
 import { useLocation } from "wouter";
 import type { SavedAnswer } from "@shared/schema";
 
@@ -211,6 +212,15 @@ export default function SavedAnswers() {
                               {data.tokensUsed.toLocaleString()} tokens
                             </Badge>
                           )}
+                          {data.confidence !== undefined && (
+                            <Badge 
+                              variant={data.confidence >= 80 ? "default" : data.confidence >= 60 ? "secondary" : "destructive"}
+                              className="text-xs"
+                            >
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              {data.confidence}% confident
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       <Button
@@ -241,6 +251,33 @@ export default function SavedAnswers() {
                         {data.answer || answer.preview || "No answer available"}
                       </p>
                     </div>
+
+                    {/* Confidence Score - Full details when expanded */}
+                    {data.confidence !== undefined && isExpanded && (
+                      <div className="border-t pt-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-semibold text-base">Confidence Details</span>
+                        </div>
+                        <div className="space-y-2">
+                          <Progress 
+                            value={data.confidence} 
+                            className={`h-2 ${
+                              data.confidence >= 80 ? "bg-green-200 dark:bg-green-900 [&>div]:bg-green-600" : 
+                              data.confidence >= 60 ? "bg-yellow-200 dark:bg-yellow-900 [&>div]:bg-yellow-600" : 
+                              "bg-red-200 dark:bg-red-900 [&>div]:bg-red-600"
+                            }`}
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            {data.confidence >= 80 
+                              ? "The AI was very confident about this answer." 
+                              : data.confidence >= 60 
+                              ? "The AI was fairly confident, but there may be some uncertainty."
+                              : "The AI was uncertain about this answer. Please verify independently."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     {data.safetyAlert && (
                       <Alert className="border-orange-500 bg-orange-50">
