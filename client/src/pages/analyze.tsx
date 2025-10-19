@@ -11,6 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Camera, Upload, Link2, AlertTriangle, Phone, Coins, CreditCard, Save, Check, Globe } from "lucide-react";
 import type { User } from "@shared/schema";
 import DailyUsageIndicator from "@/components/DailyUsageIndicator";
+import IntentSelector, { type AnalysisIntent } from "@/components/IntentSelector";
 
 const LANGUAGES = [
   { code: "en", name: "English" },
@@ -48,6 +49,7 @@ interface AnalysisResult {
 export default function Analyze() {
   const { toast } = useToast();
   const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [selectedIntent, setSelectedIntent] = useState<AnalysisIntent>("general");
   const [inputMethod, setInputMethod] = useState<"camera" | "upload" | "url">("upload");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState("");
@@ -108,6 +110,7 @@ export default function Analyze() {
       const response = await apiRequest("POST", "/api/analyze", {
         imageData: imagePreview,
         language: selectedLanguage,
+        intent: selectedIntent,
       });
 
       const data = await response.json();
@@ -296,6 +299,18 @@ export default function Analyze() {
             )}
           </CardContent>
         </Card>
+
+        {/* Intent Selector - What do you want to know? */}
+        {imagePreview && (
+          <Card>
+            <CardContent className="p-6">
+              <IntentSelector
+                selectedIntent={selectedIntent}
+                onIntentChange={setSelectedIntent}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Analyze Button */}
         {imagePreview && (
