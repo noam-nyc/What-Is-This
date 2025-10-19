@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import bcrypt from "bcrypt";
-import { insertUserSchema } from "@shared/schema";
+import { insertUserSchema, ANALYSIS_INTENTS, FREE_INTENTS, PREMIUM_INTENTS } from "@shared/schema";
 import type { AuthenticatedRequest } from "./types";
 import { 
   openai, 
@@ -546,13 +546,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/analyze - Analyze image with OpenAI Vision
   app.post("/api/analyze", requireAuth, async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
-    const { imageUrl, imageBase64, language = "en", intent = "general" } = req.body;
+    const { imageUrl, imageBase64, language = "en", intent = "what_is_this" } = req.body;
     
     try {
       // Validate intent
-      const validIntents = ["general", "use", "maintain", "fix", "history", "price", "safety"];
-      if (!validIntents.includes(intent)) {
+      if (!ANALYSIS_INTENTS.includes(intent)) {
         return res.status(400).json({ message: "Invalid intent parameter" });
+      }
+
+      // Check if intent requires premium subscription
+      if (PREMIUM_INTENTS.includes(intent)) {
+        const subscription = await storage.getActiveSubscription(authReq.session.userId!);
+        const isPremium = subscription && subscription.status === 'active';
+        
+        if (!isPremium) {
+          return res.status(403).json({ 
+            message: "Premium subscription required for this analysis type",
+            intent,
+            requiresPremium: true
+          });
+        }
       }
 
       if (!imageUrl && !imageBase64) {
