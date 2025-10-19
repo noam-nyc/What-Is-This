@@ -131,9 +131,12 @@ export default function Analyze() {
 
     try {
       await apiRequest("POST", "/api/saved-answers", {
+        title: `Analysis (${selectedIntent})`,
+        preview: result.explanation?.substring(0, 100),
+        type: result.contentType || "general",
+        data: JSON.stringify(result),
         imageUrl: imagePreview,
-        analysis: JSON.stringify(result),
-        language: selectedLanguage,
+        analysisIntent: selectedIntent,
       });
 
       toast({

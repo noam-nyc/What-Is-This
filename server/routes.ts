@@ -487,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/saved-answers", requireAuth, async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthenticatedRequest;
-      const { title, preview, type, data, imageUrl } = req.body;
+      const { title, preview, type, data, imageUrl, analysisIntent } = req.body;
 
       if (!title || !data) {
         return res.status(400).json({ message: "Title and data required" });
@@ -511,6 +511,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         preview: preview || null,
         data,
         imageUrl: imageUrl || null,
+        analysisIntent: analysisIntent || "general",
       });
 
       res.status(201).json({ savedAnswer });
@@ -544,10 +545,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // POST /api/analyze - Analyze image with OpenAI Vision
   app.post("/api/analyze", requireAuth, async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
+    const { imageUrl, imageBase64, language = "en", intent = "general" } = req.body;
+    
     try {
-      const authReq = req as AuthenticatedRequest;
-      const { imageUrl, imageBase64, language = "en", intent = "general" } = req.body;
-      
       // Validate intent
       const validIntents = ["general", "use", "maintain", "fix", "history", "price", "safety"];
       if (!validIntents.includes(intent)) {

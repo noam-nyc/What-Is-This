@@ -17,9 +17,20 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Save, Trash2, CreditCard, AlertCircle, ArrowLeft, Calendar, ImageIcon } from "lucide-react";
+import { Save, Trash2, CreditCard, AlertCircle, ArrowLeft, Calendar, ImageIcon, Info, BookOpen, Wrench, AlertTriangle, History, ShoppingCart, Shield } from "lucide-react";
 import { useLocation } from "wouter";
 import type { SavedAnswer } from "@shared/schema";
+
+// Intent labels and icons
+const INTENT_INFO: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  general: { label: "General Info", icon: Info, color: "bg-blue-500/10 text-blue-700 border-blue-200" },
+  use: { label: "How to Use", icon: BookOpen, color: "bg-green-500/10 text-green-700 border-green-200" },
+  maintain: { label: "Maintenance", icon: Wrench, color: "bg-purple-500/10 text-purple-700 border-purple-200" },
+  fix: { label: "Fix/Troubleshoot", icon: AlertTriangle, color: "bg-orange-500/10 text-orange-700 border-orange-200" },
+  history: { label: "History", icon: History, color: "bg-indigo-500/10 text-indigo-700 border-indigo-200" },
+  price: { label: "Price/Where to Buy", icon: ShoppingCart, color: "bg-pink-500/10 text-pink-700 border-pink-200" },
+  safety: { label: "Safety Check", icon: Shield, color: "bg-red-500/10 text-red-700 border-red-200" },
+};
 
 export default function SavedAnswers() {
   const { toast } = useToast();
@@ -174,7 +185,7 @@ export default function SavedAnswers() {
                         <CardTitle className="text-xl mb-2">
                           {answer.title}
                         </CardTitle>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
                             {formatDate(answer.createdAt.toString())}
@@ -185,6 +196,15 @@ export default function SavedAnswers() {
                               Image
                             </div>
                           )}
+                          {answer.analysisIntent && INTENT_INFO[answer.analysisIntent] && (() => {
+                            const IntentIcon = INTENT_INFO[answer.analysisIntent].icon;
+                            return (
+                              <Badge variant="outline" className={`text-xs ${INTENT_INFO[answer.analysisIntent].color}`}>
+                                <IntentIcon className="h-3 w-3 mr-1" />
+                                {INTENT_INFO[answer.analysisIntent].label}
+                              </Badge>
+                            );
+                          })()}
                           {data.tokensUsed && (
                             <Badge variant="outline" className="text-xs">
                               {data.tokensUsed.toLocaleString()} tokens
