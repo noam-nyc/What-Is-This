@@ -609,7 +609,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : { type: "image_url" as const, image_url: { url: `data:image/jpeg;base64,${imageBase64}` } };
 
       // Step 1: Detailed Content Analysis using intent-specific prompt
-      const systemPrompt = SYSTEM_PROMPTS[intent as keyof typeof SYSTEM_PROMPTS] || SYSTEM_PROMPTS.general;
+      const systemPrompt = SYSTEM_PROMPTS[intent as keyof typeof SYSTEM_PROMPTS] || SYSTEM_PROMPTS.what_is_this;
       const contentResponse = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
