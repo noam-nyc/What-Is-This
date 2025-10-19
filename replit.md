@@ -17,7 +17,13 @@ Preferred communication style: Simple, everyday language.
 4. **Saved Answers Workflow** - Full CRUD implementation: view list, expand/collapse details, delete with confirmation, premium-gated access
 5. **Daily Usage Indicator** - Real-time usage tracking with backend integration, shows current/daily limit, progress bar, reset time (hidden for free tier)
 6. **Help & FAQ Content** - Comprehensive FAQ covering all features, correct pricing ($2.99-$99.99), daily limits (10/40/75/75), accurate language list
-7. **Analysis Intent Selection** - Core differentiator feature allowing users to specify analysis intent (General Info, How to Use, Maintenance, Fix/Troubleshoot, History, Price/Where to Buy, Safety Check) with custom AI prompts per intent, intent badges in results and saved answers
+7. **Analysis Intent Selection (Refactored Jan 2025)** - Completely redesigned from technical categories to user-friendly plain language questions:
+   - **3 FREE Intents**: "What is this?", "Where is it from?", "General Info"
+   - **5 PREMIUM Intents**: "How to use it", "How to care for it", "Is it safe?", "How to fix it", "Where to buy one"
+   - Free/Premium split with visual badges, subscription gating on frontend and backend
+   - All 8 OpenAI system prompts rewritten for 6th-grade reading level (seniors, non-English speakers, non-technical users)
+   - Maintained RadioGroup accessibility (ARIA labels, keyboard navigation, screen reader support)
+   - Intent badges displayed in analysis results and saved answers
 
 ### Bug Fixes
 - Fixed LanguageSelector optimistic updates to properly revert on error
