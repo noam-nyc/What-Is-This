@@ -8,6 +8,19 @@ What Is This? is an accessibility-first web application designed to help seniors
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Updates (January 2025)
+
+### Critical Features Completed
+1. **Language Selection System** - 8-language support (EN, ES, ZH, FR, DE, PT, JA, KO) with backend integration and accessibility-first UI
+2. **Privacy Policy** - Comprehensive page covering GDPR, App Store requirements, AI disclaimers, data collection transparency
+3. **Account Deletion** - GDPR-compliant with password confirmation, transactional cascade deletion, session cleanup
+4. **Saved Answers Workflow** - Full CRUD implementation: view list, expand/collapse details, delete with confirmation, premium-gated access
+
+### Bug Fixes
+- Fixed LanguageSelector optimistic updates to properly revert on error
+- Wrapped deleteUser in database transaction for atomic cascading deletion
+- Fixed savedAnswers component to work with actual schema (JSONB data field)
+
 ## System Architecture
 
 ### Frontend Architecture

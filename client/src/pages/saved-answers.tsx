@@ -1,27 +1,32 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Save, Trash2, CreditCard, AlertCircle } from "lucide-react";
+import { Save, Trash2, CreditCard, AlertCircle, ArrowLeft, Calendar, ImageIcon } from "lucide-react";
 import { useLocation } from "wouter";
-
-interface SavedAnswer {
-  id: number;
-  imageUrl: string;
-  analysis: string;
-  language: string;
-  createdAt: string;
-}
+import type { SavedAnswer } from "@shared/schema";
 
 export default function SavedAnswers() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [answerToDelete, setAnswerToDelete] = useState<SavedAnswer | null>(null);
 
   const { data: subscription, isLoading: loadingSubscription } = useQuery<{ isPremium: boolean }>({
     queryKey: ["/api/subscription/check-premium"],
@@ -32,22 +37,50 @@ export default function SavedAnswers() {
     enabled: subscription?.isPremium === true,
   });
 
-  const handleDelete = async (id: number) => {
-    try {
-      await apiRequest("DELETE", `/api/saved-answers/${id}`);
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/saved-answers/${id}`, {});
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/saved-answers"] });
-      
       toast({
-        title: "Answer deleted",
+        title: "Answer Deleted",
         description: "The saved answer has been removed",
       });
-    } catch (error: any) {
+      setDeleteDialogOpen(false);
+      setAnswerToDelete(null);
+    },
+    onError: (error: any) => {
       toast({
         variant: "destructive",
-        title: "Delete failed",
-        description: error.message,
+        title: "Deletion Failed",
+        description: error.message || "Failed to delete saved answer",
       });
+    },
+  });
+
+  const handleDeleteClick = (answer: SavedAnswer) => {
+    setAnswerToDelete(answer);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (answerToDelete) {
+      deleteMutation.mutate(answerToDelete.id);
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return date.toLocaleDateString();
   };
 
   if (loadingSubscription) {
@@ -130,30 +163,31 @@ export default function SavedAnswers() {
         ) : (
           <div className="space-y-4">
             {savedAnswers.map((answer) => {
-              const analysis = JSON.parse(answer.analysis);
               const isExpanded = expandedId === answer.id;
+              const data = typeof answer.data === 'string' ? JSON.parse(answer.data) : answer.data;
 
               return (
-                <Card key={answer.id} data-testid={`card-answer-${answer.id}`}>
+                <Card key={answer.id} data-testid={`card-answer-${answer.id}`} className="hover-elevate">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <CardTitle className="text-xl mb-2">
-                          {new Date(answer.createdAt).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {answer.title}
                         </CardTitle>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className="text-sm">
-                            {answer.language.toUpperCase()}
-                          </Badge>
-                          {analysis.contentType && (
-                            <Badge variant="outline" className="text-sm">
-                              {analysis.contentType}
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {formatDate(answer.createdAt.toString())}
+                          </div>
+                          {answer.imageUrl && (
+                            <div className="flex items-center gap-1">
+                              <ImageIcon className="h-4 w-4" />
+                              Image
+                            </div>
+                          )}
+                          {data.tokensUsed && (
+                            <Badge variant="outline" className="text-xs">
+                              {data.tokensUsed.toLocaleString()} tokens
                             </Badge>
                           )}
                         </div>
@@ -161,7 +195,7 @@ export default function SavedAnswers() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(answer.id)}
+                        onClick={() => handleDeleteClick(answer)}
                         className="h-10 w-10 text-destructive hover:bg-destructive/10"
                         data-testid={`button-delete-${answer.id}`}
                       >
@@ -171,19 +205,30 @@ export default function SavedAnswers() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {answer.imageUrl && (
-                      <img
-                        src={answer.imageUrl}
-                        alt="Analyzed image"
-                        className="w-full max-h-48 object-contain rounded-lg border"
-                        data-testid={`img-answer-${answer.id}`}
-                      />
+                      <div className="rounded-lg overflow-hidden border">
+                        <img
+                          src={answer.imageUrl}
+                          alt="Analysis subject"
+                          className="w-full h-auto max-h-64 object-contain bg-muted"
+                          data-testid={`img-answer-${answer.id}`}
+                        />
+                      </div>
                     )}
 
                     <div className={isExpanded ? "" : "line-clamp-3"}>
-                      <p className="text-lg leading-relaxed">
-                        {analysis.explanation}
+                      <p className="text-lg leading-relaxed whitespace-pre-wrap">
+                        {data.answer || answer.preview || "No answer available"}
                       </p>
                     </div>
+
+                    {data.safetyAlert && (
+                      <Alert className="border-orange-500 bg-orange-50">
+                        <AlertCircle className="h-5 w-5 text-orange-600" />
+                        <AlertDescription className="text-base ml-2">
+                          <strong>Safety Alert:</strong> {data.safetyAlert}
+                        </AlertDescription>
+                      </Alert>
+                    )}
 
                     <Button
                       variant="outline"
@@ -200,6 +245,38 @@ export default function SavedAnswers() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl">Delete Saved Answer?</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              This action cannot be undone. This will permanently delete this saved answer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="h-12 text-lg"
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setAnswerToDelete(null);
+              }}
+              data-testid="button-cancel-delete"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="h-12 text-lg bg-destructive hover:bg-destructive/90"
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+              data-testid="button-confirm-delete"
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
