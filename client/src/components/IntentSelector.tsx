@@ -103,6 +103,7 @@ export default function IntentSelector({ selectedIntent, onIntentChange, isPremi
             <label
               key={option.id}
               htmlFor={`intent-${option.id}`}
+              aria-disabled={isDisabled}
               className={`flex items-start gap-3 p-4 rounded-lg border-2 transition-all ${
                 isDisabled
                   ? "opacity-50 cursor-not-allowed"
@@ -113,6 +114,7 @@ export default function IntentSelector({ selectedIntent, onIntentChange, isPremi
                   : "border-border bg-card"
               }`}
               data-testid={`button-intent-${option.id}`}
+              onClick={isDisabled ? (e) => e.preventDefault() : undefined}
             >
               <RadioGroupItem 
                 value={option.id} 
