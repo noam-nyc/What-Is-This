@@ -15,11 +15,16 @@ Preferred communication style: Simple, everyday language.
 2. **Privacy Policy** - Comprehensive page covering GDPR, App Store requirements, AI disclaimers, data collection transparency
 3. **Account Deletion** - GDPR-compliant with password confirmation, transactional cascade deletion, session cleanup
 4. **Saved Answers Workflow** - Full CRUD implementation: view list, expand/collapse details, delete with confirmation, premium-gated access
+5. **Daily Usage Indicator** - Real-time usage tracking with backend integration, shows current/daily limit, progress bar, reset time (hidden for free tier)
+6. **Help & FAQ Content** - Comprehensive FAQ covering all features, correct pricing ($2.99-$99.99), daily limits (10/40/75/75), accurate language list
 
 ### Bug Fixes
 - Fixed LanguageSelector optimistic updates to properly revert on error
 - Wrapped deleteUser in database transaction for atomic cascading deletion
 - Fixed savedAnswers component to work with actual schema (JSONB data field)
+- Updated analyze.tsx language list to correct 8 languages (removed Arabic/Hindi, added Japanese/Korean)
+- DailyUsageIndicator now hidden for free tier users (monthly quota instead of daily)
+- Updated tier naming to user-friendly format ("Weekly Plan", "Premium Plan", etc.)
 
 ## System Architecture
 

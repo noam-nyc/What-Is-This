@@ -15,15 +15,19 @@ export default function DailyUsageIndicator({
   subscriptionTier,
   resetsAt,
 }: DailyUsageIndicatorProps) {
+  // Don't show for free tier (they have monthly quota, not daily)
+  if (subscriptionTier === "free") {
+    return null;
+  }
+
   const percentage = (currentCount / dailyLimit) * 100;
   const remaining = Math.max(0, dailyLimit - currentCount);
   
   const tierNames: Record<string, string> = {
-    free: "Free (3/month)",
-    weekly: "Weekly",
-    premium: "Premium",
-    pro: "Pro",
-    annual: "Annual",
+    weekly: "Weekly Plan",
+    premium: "Premium Plan",
+    pro: "Pro Plan",
+    annual: "Annual Plan",
   };
 
   const resetTime = resetsAt ? new Date(resetsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "midnight";

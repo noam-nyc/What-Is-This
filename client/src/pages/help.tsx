@@ -74,14 +74,14 @@ export default function Help() {
                     <li>English</li>
                     <li>Spanish (Español)</li>
                     <li>Chinese (中文)</li>
-                    <li>Arabic (العربية)</li>
                     <li>French (Français)</li>
                     <li>German (Deutsch)</li>
-                    <li>Hindi (हिन्दी)</li>
                     <li>Portuguese (Português)</li>
+                    <li>Japanese (日本語)</li>
+                    <li>Korean (한국어)</li>
                   </ul>
                   <p className="mt-3">
-                    Select your language before analyzing an image. All explanations will be provided in your chosen language.
+                    Select your language from your account settings or before analyzing an image. All explanations will be provided in your chosen language.
                   </p>
                 </AccordionContent>
               </AccordionItem>
@@ -94,26 +94,58 @@ export default function Help() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-base leading-relaxed">
-                  We offer three ways to use What Is This?:
+                  We offer several subscription options through the iOS App Store:
                   
                   <div className="mt-3 space-y-3">
                     <div>
-                      <strong>Free Plan:</strong> Get 3 free analysis requests every month. Perfect for occasional use.
+                      <strong>Free Plan:</strong> Get 3 free analyses every month. Perfect for occasional use.
                     </div>
                     
                     <div>
-                      <strong>Premium Subscription ($4.99/month):</strong>
+                      <strong>Weekly Subscription ($2.99/week):</strong>
                       <ul className="list-disc pl-6 mt-1">
-                        <li>Unlimited analysis requests</li>
+                        <li>10 analyses per day</li>
+                        <li>All languages supported</li>
+                        <li>Safety alerts included</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <strong>Premium Subscription ($5.99/month):</strong>
+                      <ul className="list-disc pl-6 mt-1">
+                        <li>40 analyses per day</li>
                         <li>Save answers for later reference</li>
-                        <li>Priority processing</li>
+                        <li>All languages supported</li>
+                        <li>Most popular choice</li>
                       </ul>
                     </div>
                     
                     <div>
-                      <strong>Pay-as-you-go Tokens:</strong> Purchase tokens in packages (100, 250, 500, or 1000 tokens) for flexible usage beyond your free quota.
+                      <strong>Pro Subscription ($12.99/month):</strong>
+                      <ul className="list-disc pl-6 mt-1">
+                        <li>75 analyses per day</li>
+                        <li>Save answers for later reference</li>
+                        <li>All languages supported</li>
+                        <li>Advanced features</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <strong>Annual Subscription ($99.99/year):</strong>
+                      <ul className="list-disc pl-6 mt-1">
+                        <li>75 analyses per day</li>
+                        <li>Save answers for later reference</li>
+                        <li>All languages supported</li>
+                        <li>Best value - save over 30%</li>
+                      </ul>
                     </div>
                   </div>
+                  
+                  <Alert className="mt-4 border-primary/50 bg-primary/10">
+                    <AlertDescription className="text-base">
+                      All subscriptions are managed through the Apple App Store. Daily limits reset at midnight UTC.
+                    </AlertDescription>
+                  </Alert>
                 </AccordionContent>
               </AccordionItem>
 
@@ -180,14 +212,15 @@ export default function Help() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-base leading-relaxed">
-                  Saving answers is a premium feature available to subscribers ($4.99/month).
+                  Saving answers is a premium feature available to Premium, Pro, and Annual subscribers.
                   
                   <p className="mt-3">
-                    When you have a premium subscription:
+                    When you have a premium subscription ($5.99/month or higher):
                   </p>
                   <ul className="list-disc pl-6 mt-2 space-y-1">
                     <li>Click the "Save Answer" button after any analysis</li>
-                    <li>Access all your saved answers from the "Saved Answers" page</li>
+                    <li>Access all your saved answers from the "Saved" tab</li>
+                    <li>View full analysis results with images</li>
                     <li>Delete saved answers you no longer need</li>
                     <li>Keep your saved answers as long as your subscription is active</li>
                   </ul>

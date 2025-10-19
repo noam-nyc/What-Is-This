@@ -24,6 +24,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { User, CreditCard, Coins, Package, CheckCircle2, LogOut, ShoppingCart } from "lucide-react";
 import type { User as UserType } from "@shared/schema";
 import LanguageSelector from "@/components/LanguageSelector";
+import DailyUsageIndicator from "@/components/DailyUsageIndicator";
 
 interface TokenPurchase {
   id: number;
@@ -70,6 +71,15 @@ export default function Account() {
 
   const { data: premiumStatus } = useQuery<{ isPremium: boolean }>({
     queryKey: ["/api/subscription/check-premium"],
+  });
+
+  const { data: dailyUsage } = useQuery<{
+    currentCount: number;
+    dailyLimit: number;
+    subscriptionTier: string;
+    resetsAt: string;
+  }>({
+    queryKey: ["/api/usage/daily"],
   });
 
   const handleLogout = async () => {
@@ -196,6 +206,16 @@ export default function Account() {
 
         {/* Language Preference */}
         {user && <LanguageSelector user={user} />}
+
+        {/* Daily Usage Indicator */}
+        {dailyUsage && (
+          <DailyUsageIndicator
+            currentCount={dailyUsage.currentCount}
+            dailyLimit={dailyUsage.dailyLimit}
+            subscriptionTier={dailyUsage.subscriptionTier}
+            resetsAt={dailyUsage.resetsAt}
+          />
+        )}
 
         {/* Subscription Status */}
         <Card>

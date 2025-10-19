@@ -10,16 +10,17 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Camera, Upload, Link2, AlertTriangle, Phone, Coins, CreditCard, Save, Check, Globe } from "lucide-react";
 import type { User } from "@shared/schema";
+import DailyUsageIndicator from "@/components/DailyUsageIndicator";
 
 const LANGUAGES = [
   { code: "en", name: "English" },
   { code: "es", name: "Español" },
   { code: "zh", name: "中文" },
-  { code: "ar", name: "العربية" },
   { code: "fr", name: "Français" },
   { code: "de", name: "Deutsch" },
-  { code: "hi", name: "हिन्दी" },
   { code: "pt", name: "Português" },
+  { code: "ja", name: "日本語" },
+  { code: "ko", name: "한국어" },
 ];
 
 interface AnalysisResult {
@@ -62,6 +63,14 @@ export default function Analyze() {
   });
   const { data: subscription } = useQuery<{ isPremium: boolean }>({
     queryKey: ["/api/subscription/check-premium"],
+  });
+  const { data: dailyUsage } = useQuery<{
+    currentCount: number;
+    dailyLimit: number;
+    subscriptionTier: string;
+    resetsAt: string;
+  }>({
+    queryKey: ["/api/usage/daily"],
   });
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,6 +178,16 @@ export default function Analyze() {
             )}
           </div>
         </div>
+
+        {/* Daily Usage Indicator */}
+        {dailyUsage && (
+          <DailyUsageIndicator
+            currentCount={dailyUsage.currentCount}
+            dailyLimit={dailyUsage.dailyLimit}
+            subscriptionTier={dailyUsage.subscriptionTier}
+            resetsAt={dailyUsage.resetsAt}
+          />
+        )}
 
         {/* Language Selector */}
         <Card>

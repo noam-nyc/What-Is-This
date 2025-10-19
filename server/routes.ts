@@ -335,6 +335,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Token & Subscription Management Routes
 
+  // GET /api/usage/daily - Get daily usage stats
+  app.get("/api/usage/daily", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      let user = await storage.getUser(authReq.session.userId!);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check and reset daily limit if needed
+      if (shouldResetDailyLimit(user.dailyLimitResetDate)) {
+        await storage.updateUser(user.id, {
+          dailyAnalysisCount: 0,
+          dailyLimitResetDate: getMidnightUTC(),
+        });
+        // Refresh user object
+        user = await storage.getUser(user.id);
+        if (!user) {
+          return res.status(500).json({ message: "Failed to refresh user data" });
+        }
+      }
+
+      const userTier = (user.subscriptionTier || "free") as SubscriptionTier;
+      const dailyLimit = getDailyLimit(userTier);
+      
+      res.json({
+        currentCount: user.dailyAnalysisCount,
+        dailyLimit,
+        subscriptionTier: userTier,
+        resetsAt: getNextMidnightUTC().toISOString(),
+      });
+    } catch (error) {
+      console.error("Get daily usage error:", error);
+      res.status(500).json({ message: "Failed to get usage stats" });
+    }
+  });
+
   // GET /api/tokens/balance - Get current token balance
   app.get("/api/tokens/balance", requireAuth, async (req: Request, res: Response) => {
     try {
