@@ -118,11 +118,20 @@ export default function Analyze() {
     setResult(null);
 
     try {
-      const response = await apiRequest("POST", "/api/analyze", {
-        imageData: imagePreview,
+      // Determine if it's a URL or base64 data
+      const isUrl = imagePreview.startsWith("http://") || imagePreview.startsWith("https://");
+      const payload: any = {
         language: selectedLanguage,
         intent: selectedIntent,
-      });
+      };
+
+      if (isUrl) {
+        payload.imageUrl = imagePreview;
+      } else {
+        payload.imageBase64 = imagePreview;
+      }
+
+      const response = await apiRequest("POST", "/api/analyze", payload);
 
       const data = await response.json();
       setResult(data);

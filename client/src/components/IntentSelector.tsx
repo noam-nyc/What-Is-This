@@ -1,5 +1,5 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Info, BookOpen, Wrench, AlertTriangle, History, ShoppingCart, Shield } from "lucide-react";
 
 export type AnalysisIntent = "general" | "use" | "maintain" | "fix" | "history" | "price" | "safety";
@@ -64,41 +64,54 @@ interface IntentSelectorProps {
 export default function IntentSelector({ selectedIntent, onIntentChange }: IntentSelectorProps) {
   return (
     <div className="space-y-3">
-      <Label className="text-lg font-semibold">What do you want to know?</Label>
-      <p className="text-sm text-muted-foreground">
+      <Label id="intent-selector-label" className="text-lg font-semibold">
+        What do you want to know?
+      </Label>
+      <p className="text-sm text-muted-foreground" id="intent-selector-description">
         Choose what information you need about this image
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <RadioGroup 
+        value={selectedIntent} 
+        onValueChange={onIntentChange}
+        aria-labelledby="intent-selector-label"
+        aria-describedby="intent-selector-description"
+        className="grid grid-cols-1 md:grid-cols-2 gap-3"
+      >
         {INTENT_OPTIONS.map((option) => {
           const Icon = option.icon;
           const isSelected = selectedIntent === option.id;
           
           return (
-            <Card
+            <label
               key={option.id}
-              className={`cursor-pointer transition-all hover-elevate active-elevate-2 ${
-                isSelected ? "ring-2 ring-primary bg-primary/5" : ""
+              htmlFor={`intent-${option.id}`}
+              className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover-elevate active-elevate-2 ${
+                isSelected 
+                  ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2" 
+                  : "border-border bg-card"
               }`}
-              onClick={() => onIntentChange(option.id)}
-              data-testid={`intent-option-${option.id}`}
+              data-testid={`button-intent-${option.id}`}
             >
-              <CardContent className="p-4 flex items-start gap-3">
-                <div className={`p-2 rounded-md ${
-                  isSelected ? "bg-primary text-primary-foreground" : "bg-muted"
-                }`}>
-                  <Icon className="w-5 h-5" />
+              <RadioGroupItem 
+                value={option.id} 
+                id={`intent-${option.id}`}
+                className="mt-1"
+              />
+              <div className={`p-2 rounded-md shrink-0 ${
+                isSelected ? "bg-primary text-primary-foreground" : "bg-muted"
+              }`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-base mb-1">{option.title}</div>
+                <div className="text-sm text-muted-foreground leading-snug">
+                  {option.description}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-base mb-1">{option.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-snug">
-                    {option.description}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </label>
           );
         })}
-      </div>
+      </RadioGroup>
     </div>
   );
 }

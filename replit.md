@@ -17,6 +17,7 @@ Preferred communication style: Simple, everyday language.
 4. **Saved Answers Workflow** - Full CRUD implementation: view list, expand/collapse details, delete with confirmation, premium-gated access
 5. **Daily Usage Indicator** - Real-time usage tracking with backend integration, shows current/daily limit, progress bar, reset time (hidden for free tier)
 6. **Help & FAQ Content** - Comprehensive FAQ covering all features, correct pricing ($2.99-$99.99), daily limits (10/40/75/75), accurate language list
+7. **Analysis Intent Selection** - Core differentiator feature allowing users to specify analysis intent (General Info, How to Use, Maintenance, Fix/Troubleshoot, History, Price/Where to Buy, Safety Check) with custom AI prompts per intent, intent badges in results and saved answers
 
 ### Bug Fixes
 - Fixed LanguageSelector optimistic updates to properly revert on error
@@ -25,6 +26,8 @@ Preferred communication style: Simple, everyday language.
 - Updated analyze.tsx language list to correct 8 languages (removed Arabic/Hindi, added Japanese/Korean)
 - DailyUsageIndicator now hidden for free tier users (monthly quota instead of daily)
 - Updated tier naming to user-friendly format ("Weekly Plan", "Premium Plan", etc.)
+- Fixed frontend/backend mismatch: analyze.tsx now sends imageUrl for URLs and imageBase64 for uploaded files (was sending imageData which backend didn't recognize)
+- Fixed intent variable scoping error in server/routes.ts error handler
 
 ## System Architecture
 
