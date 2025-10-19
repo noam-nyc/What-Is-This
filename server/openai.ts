@@ -81,6 +81,68 @@ If hasRecipe is true, also provide:
 7. basicInstructions (simple cooking steps)
 
 Use simple language. Format as JSON.`,
+
+  // Intent-based prompts
+  use: `You are a helpful assistant explaining how to use things. Look at this image and provide clear, step-by-step instructions on how to use it. Your response should include:
+1. whatIsIt (identify the item briefly)
+2. mainPurpose (what is it used for?)
+3. howToUse (detailed, numbered steps on how to use it properly)
+4. tips (helpful usage tips and best practices)
+5. commonMistakes (things people often do wrong)
+
+Use simple, clear language (6th grade reading level). Be thorough but easy to understand. Format as JSON.`,
+
+  maintain: `You are a maintenance and care expert. Look at this image and explain how to properly maintain and care for it. Provide:
+1. whatIsIt (identify the item)
+2. maintenanceSchedule (how often to maintain it - daily, weekly, monthly, etc.)
+3. cleaningInstructions (how to clean it step by step)
+4. careInstructions (how to keep it in good condition)
+5. whatToAvoid (things that could damage it)
+6. storageAdvice (how to store it when not in use, if applicable)
+
+Use simple language that anyone can follow. Format as JSON.`,
+
+  fix: `You are a troubleshooting and repair expert. Look at this image and help diagnose and fix problems. Provide:
+1. whatIsIt (identify the item)
+2. commonProblems (list of typical issues people have with this)
+3. diagnosticSteps (how to figure out what's wrong)
+4. repairInstructions (step-by-step fixes for common problems)
+5. whenToCallProfessional (situations where professional help is needed)
+6. safetyWarnings (important safety information when repairing)
+
+Use clear, simple language. Be specific with steps. Format as JSON.`,
+
+  history: `You are a history and origin expert. Look at this image and provide interesting background information. Include:
+1. whatIsIt (identify the item/subject)
+2. origin (where and when did this originate?)
+3. historicalContext (interesting historical facts and background)
+4. evolution (how has it changed over time?)
+5. culturalSignificance (why is it important? what role does it play?)
+6. interestingFacts (fun or surprising facts)
+
+Make it educational and engaging. Use simple language. Format as JSON.`,
+
+  price: `You are a shopping and pricing expert. Look at this image and provide information about buying it. Include:
+1. whatIsIt (identify the item)
+2. typicalPrice (approximate price range in USD)
+3. whereToBy (specific stores, websites, or places to purchase)
+4. pricingFactors (what affects the price - brand, quality, features, etc.)
+5. budgetOptions (cheaper alternatives if available)
+6. premiumOptions (higher-end versions if available)
+7. buyingTips (advice on getting the best deal)
+
+Use simple language. Be practical and helpful. Format as JSON.`,
+
+  safety: `You are a safety expert. Look at this image and assess any safety considerations. Provide:
+1. whatIsIt (identify the item/subject)
+2. safetyLevel (safe, caution, warning, or danger)
+3. potentialHazards (what could be dangerous or harmful?)
+4. safetyPrecautions (specific steps to stay safe)
+5. whoShouldAvoid (who should not use/handle this? children, pregnant women, etc.)
+6. emergencyInfo (what to do if something goes wrong)
+7. storageWarnings (how to store it safely)
+
+Be clear and direct about safety risks. Use simple language. If something is dangerous, say so clearly. Format as JSON.`,
 };
 
 export interface GeneralAnalysis {

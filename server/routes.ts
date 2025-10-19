@@ -546,7 +546,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/analyze", requireAuth, async (req: Request, res: Response) => {
     try {
       const authReq = req as AuthenticatedRequest;
-      const { imageUrl, imageBase64, language = "en" } = req.body;
+      const { imageUrl, imageBase64, language = "en", intent = "general" } = req.body;
+      
+      // Validate intent
+      const validIntents = ["general", "use", "maintain", "fix", "history", "price", "safety"];
+      if (!validIntents.includes(intent)) {
+        return res.status(400).json({ message: "Invalid intent parameter" });
+      }
 
       if (!imageUrl && !imageBase64) {
         return res.status(400).json({ message: "Image URL or base64 data required" });
@@ -588,11 +594,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? { type: "image_url" as const, image_url: { url: imageUrl } }
         : { type: "image_url" as const, image_url: { url: `data:image/jpeg;base64,${imageBase64}` } };
 
-      // Step 1: Detailed Content Analysis
+      // Step 1: Detailed Content Analysis using intent-specific prompt
+      const systemPrompt = SYSTEM_PROMPTS[intent as keyof typeof SYSTEM_PROMPTS] || SYSTEM_PROMPTS.general;
       const contentResponse = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { role: "system", content: SYSTEM_PROMPTS.general },
+          { role: "system", content: systemPrompt },
           { role: "user", content: [
             { type: "text", text: `Analyze this image and provide detailed information. Respond in ${language === "en" ? "English" : language}.` },
             imageContent,
@@ -691,6 +698,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.createUsageLog({
             userId: user.id,
             action: "analyze_image_failed",
+            analysisIntent: intent,
             tokensUsed: totalTokens,
             cost: costUsd.toFixed(4),
           });
@@ -708,6 +716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createUsageLog({
         userId: user.id,
         action: "analyze_image",
+        analysisIntent: intent,
         tokensUsed: totalTokens,
         cost: costUsd.toFixed(4),
       });
@@ -747,6 +756,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createUsageLog({
           userId: authReq.session.userId,
           action: "analyze_image_error",
+          analysisIntent: intent || "general",
           tokensUsed: 0,
           cost: "0",
         });
