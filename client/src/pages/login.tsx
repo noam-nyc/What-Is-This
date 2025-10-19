@@ -130,6 +130,18 @@ export default function Login() {
                 )}
               />
 
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-base px-0"
+                  onClick={() => setLocation("/forgot-password")}
+                  data-testid="button-forgot-password"
+                >
+                  Forgot password?
+                </Button>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full h-14 text-xl"

@@ -13,6 +13,8 @@ import type { User } from "@shared/schema";
 // Pages
 import Login from "@/pages/login";
 import Register from "@/pages/register";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 import Onboarding from "@/pages/onboarding";
 import Analyze from "@/pages/analyze";
 import SavedAnswers from "@/pages/saved-answers";
@@ -158,6 +160,8 @@ function Router() {
       <Switch>
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
+        <Route path="/forgot-password" component={ForgotPassword} />
+        <Route path="/reset-password" component={ResetPassword} />
         <Route>
           {() => <Redirect to="/login" />}
         </Route>
