@@ -59,7 +59,7 @@ export const savedAnswers = pgTable("saved_answers", {
   preview: text("preview"),
   data: jsonb("data").notNull(), // full explanation data
   imageUrl: text("image_url"), // optional - could store image URLs
-  analysisIntent: text("analysis_intent").notNull().default("general"), // general, use, maintain, fix, history, price, safety
+  analysisIntent: text("analysis_intent").notNull().default("what_is_this"), // what_is_this, where_from, general_info, how_to_use, how_to_care, is_safe, how_to_fix, where_to_buy
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -69,7 +69,7 @@ export const usageLogs = pgTable("usage_logs", {
   userId: varchar("user_id").references(() => users.id),
   action: text("action").notNull(), // analyze_image, ask_question, etc.
   contentType: text("content_type"), // product, document, food
-  analysisIntent: text("analysis_intent"), // general, use, maintain, fix, history, price, safety
+  analysisIntent: text("analysis_intent"), // what_is_this, where_from, general_info, how_to_use, how_to_care, is_safe, how_to_fix, where_to_buy
   tokensUsed: integer("tokens_used").default(0),
   openaiTokens: integer("openai_tokens").default(0), // actual OpenAI tokens
   cost: decimal("cost", { precision: 10, scale: 4 }).default("0"), // actual cost in USD
@@ -161,3 +161,20 @@ export type InsertSavedAnswer = z.infer<typeof insertSavedAnswerSchema>;
 
 export type UsageLog = typeof usageLogs.$inferSelect;
 export type InsertUsageLog = z.infer<typeof insertUsageLogSchema>;
+
+// Analysis Intent Type - 3 Free + 5 Premium
+export const ANALYSIS_INTENTS = [
+  "what_is_this",    // FREE - Basic ID: name, type, brand
+  "where_from",      // FREE - Origin, who made it, history
+  "general_info",    // FREE - Translation, plain explanation
+  "how_to_use",      // PREMIUM - Setup, application, usage
+  "how_to_care",     // PREMIUM - Cleaning, maintenance, storage
+  "is_safe",         // PREMIUM - Allergy, shock, injury hazards
+  "how_to_fix",      // PREMIUM - Troubleshooting, repair tips
+  "where_to_buy",    // PREMIUM - Pricing, product links, marketplaces
+] as const;
+
+export type AnalysisIntent = typeof ANALYSIS_INTENTS[number];
+
+export const FREE_INTENTS: AnalysisIntent[] = ["what_is_this", "where_from", "general_info"];
+export const PREMIUM_INTENTS: AnalysisIntent[] = ["how_to_use", "how_to_care", "is_safe", "how_to_fix", "where_to_buy"];
