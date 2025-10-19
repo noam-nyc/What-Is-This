@@ -1,67 +1,84 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Info, BookOpen, Wrench, AlertTriangle, History, ShoppingCart, Shield } from "lucide-react";
-
-export type AnalysisIntent = "general" | "use" | "maintain" | "fix" | "history" | "price" | "safety";
+import { Badge } from "@/components/ui/badge";
+import { HelpCircle, MapPin, MessageCircle, BookOpen, Sparkles, Shield, Wrench, ShoppingCart } from "lucide-react";
+import type { AnalysisIntent } from "@shared/schema";
+import { FREE_INTENTS } from "@shared/schema";
 
 interface IntentOption {
   id: AnalysisIntent;
   icon: React.ElementType;
   title: string;
   description: string;
+  isFree: boolean;
 }
 
 const INTENT_OPTIONS: IntentOption[] = [
   {
-    id: "general",
-    icon: Info,
-    title: "General Information",
-    description: "What is this? Basic identification and overview",
+    id: "what_is_this",
+    icon: HelpCircle,
+    title: "What is this?",
+    description: "Basic ID: name, type, brand, category, species, file type",
+    isFree: true,
   },
   {
-    id: "use",
+    id: "where_from",
+    icon: MapPin,
+    title: "Where is it from?",
+    description: "Origin, who made it, what it's made of, history",
+    isFree: true,
+  },
+  {
+    id: "general_info",
+    icon: MessageCircle,
+    title: "General Info",
+    description: "Translation, plain-language explanation, definitions",
+    isFree: true,
+  },
+  {
+    id: "how_to_use",
     icon: BookOpen,
-    title: "How to Use",
-    description: "Instructions, tips, and proper usage",
+    title: "How to use it",
+    description: "Setup, application, usage",
+    isFree: false,
   },
   {
-    id: "maintain",
-    icon: Wrench,
-    title: "How to Maintain",
-    description: "Care, cleaning, and maintenance tips",
+    id: "how_to_care",
+    icon: Sparkles,
+    title: "How to care for it",
+    description: "Cleaning, maintenance, storage",
+    isFree: false,
   },
   {
-    id: "fix",
-    icon: AlertTriangle,
-    title: "How to Fix / Troubleshoot",
-    description: "Repair steps, common issues, and solutions",
-  },
-  {
-    id: "history",
-    icon: History,
-    title: "History & Origin",
-    description: "When and where it's from, background info",
-  },
-  {
-    id: "price",
-    icon: ShoppingCart,
-    title: "Price & Where to Buy",
-    description: "Cost, shopping options, and where to get it",
-  },
-  {
-    id: "safety",
+    id: "is_safe",
     icon: Shield,
-    title: "Safety Check",
-    description: "Is this safe? Warnings and precautions",
+    title: "Is it safe?",
+    description: "Allergy, shock, injury, choking, health hazards",
+    isFree: false,
+  },
+  {
+    id: "how_to_fix",
+    icon: Wrench,
+    title: "How to fix it",
+    description: "Troubleshooting, repair tips",
+    isFree: false,
+  },
+  {
+    id: "where_to_buy",
+    icon: ShoppingCart,
+    title: "Where to buy one",
+    description: "Pricing, product links, marketplaces, alternatives",
+    isFree: false,
   },
 ];
 
 interface IntentSelectorProps {
   selectedIntent: AnalysisIntent;
   onIntentChange: (intent: AnalysisIntent) => void;
+  isPremium?: boolean;
 }
 
-export default function IntentSelector({ selectedIntent, onIntentChange }: IntentSelectorProps) {
+export default function IntentSelector({ selectedIntent, onIntentChange, isPremium = false }: IntentSelectorProps) {
   return (
     <div className="space-y-3">
       <Label id="intent-selector-label" className="text-lg font-semibold">
@@ -80,12 +97,17 @@ export default function IntentSelector({ selectedIntent, onIntentChange }: Inten
         {INTENT_OPTIONS.map((option) => {
           const Icon = option.icon;
           const isSelected = selectedIntent === option.id;
+          const isDisabled = !option.isFree && !isPremium;
           
           return (
             <label
               key={option.id}
               htmlFor={`intent-${option.id}`}
-              className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover-elevate active-elevate-2 ${
+              className={`flex items-start gap-3 p-4 rounded-lg border-2 transition-all ${
+                isDisabled
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer hover-elevate active-elevate-2"
+              } ${
                 isSelected 
                   ? "border-primary bg-primary/5 ring-2 ring-primary ring-offset-2" 
                   : "border-border bg-card"
@@ -95,6 +117,7 @@ export default function IntentSelector({ selectedIntent, onIntentChange }: Inten
               <RadioGroupItem 
                 value={option.id} 
                 id={`intent-${option.id}`}
+                disabled={isDisabled}
                 className="mt-1"
               />
               <div className={`p-2 rounded-md shrink-0 ${
@@ -103,10 +126,24 @@ export default function IntentSelector({ selectedIntent, onIntentChange }: Inten
                 <Icon className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-base mb-1">{option.title}</div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-base">{option.title}</span>
+                  <Badge 
+                    variant={option.isFree ? "secondary" : "default"}
+                    className="text-xs shrink-0"
+                    data-testid={`badge-${option.isFree ? 'free' : 'premium'}-${option.id}`}
+                  >
+                    {option.isFree ? "Free" : "Premium"}
+                  </Badge>
+                </div>
                 <div className="text-sm text-muted-foreground leading-snug">
                   {option.description}
                 </div>
+                {isDisabled && (
+                  <div className="text-xs text-muted-foreground mt-2 italic">
+                    Subscribe to unlock this feature
+                  </div>
+                )}
               </div>
             </label>
           );

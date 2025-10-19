@@ -8,20 +8,22 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Camera, Upload, Link2, AlertTriangle, Phone, Coins, CreditCard, Save, Check, Globe, Info, BookOpen, Wrench, History, ShoppingCart, Shield } from "lucide-react";
+import { Camera, Upload, Link2, AlertTriangle, Phone, Coins, CreditCard, Save, Check, Globe, HelpCircle, MapPin, MessageCircle, BookOpen, Sparkles, Shield, Wrench, ShoppingCart } from "lucide-react";
 import type { User } from "@shared/schema";
 import DailyUsageIndicator from "@/components/DailyUsageIndicator";
-import IntentSelector, { type AnalysisIntent } from "@/components/IntentSelector";
+import IntentSelector from "@/components/IntentSelector";
+import type { AnalysisIntent } from "@shared/schema";
 
 // Intent labels and icons
 const INTENT_INFO: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  general: { label: "General Info", icon: Info, color: "bg-blue-500/10 text-blue-700 border-blue-200" },
-  use: { label: "How to Use", icon: BookOpen, color: "bg-green-500/10 text-green-700 border-green-200" },
-  maintain: { label: "Maintenance", icon: Wrench, color: "bg-purple-500/10 text-purple-700 border-purple-200" },
-  fix: { label: "Fix/Troubleshoot", icon: AlertTriangle, color: "bg-orange-500/10 text-orange-700 border-orange-200" },
-  history: { label: "History", icon: History, color: "bg-indigo-500/10 text-indigo-700 border-indigo-200" },
-  price: { label: "Price/Where to Buy", icon: ShoppingCart, color: "bg-pink-500/10 text-pink-700 border-pink-200" },
-  safety: { label: "Safety Check", icon: Shield, color: "bg-red-500/10 text-red-700 border-red-200" },
+  what_is_this: { label: "What is this?", icon: HelpCircle, color: "bg-blue-500/10 text-blue-700 border-blue-200" },
+  where_from: { label: "Where is it from?", icon: MapPin, color: "bg-indigo-500/10 text-indigo-700 border-indigo-200" },
+  general_info: { label: "General Info", icon: MessageCircle, color: "bg-slate-500/10 text-slate-700 border-slate-200" },
+  how_to_use: { label: "How to use it", icon: BookOpen, color: "bg-green-500/10 text-green-700 border-green-200" },
+  how_to_care: { label: "How to care for it", icon: Sparkles, color: "bg-purple-500/10 text-purple-700 border-purple-200" },
+  is_safe: { label: "Is it safe?", icon: Shield, color: "bg-red-500/10 text-red-700 border-red-200" },
+  how_to_fix: { label: "How to fix it", icon: Wrench, color: "bg-orange-500/10 text-orange-700 border-orange-200" },
+  where_to_buy: { label: "Where to buy one", icon: ShoppingCart, color: "bg-pink-500/10 text-pink-700 border-pink-200" },
 };
 
 const LANGUAGES = [
@@ -60,7 +62,7 @@ interface AnalysisResult {
 export default function Analyze() {
   const { toast } = useToast();
   const [selectedLanguage, setSelectedLanguage] = useState("en");
-  const [selectedIntent, setSelectedIntent] = useState<AnalysisIntent>("general");
+  const [selectedIntent, setSelectedIntent] = useState<AnalysisIntent>("what_is_this");
   const [inputMethod, setInputMethod] = useState<"camera" | "upload" | "url">("upload");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState("");
@@ -330,6 +332,7 @@ export default function Analyze() {
               <IntentSelector
                 selectedIntent={selectedIntent}
                 onIntentChange={setSelectedIntent}
+                isPremium={subscription?.isPremium ?? false}
               />
             </CardContent>
           </Card>
