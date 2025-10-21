@@ -11,8 +11,9 @@ const app = express();
 app.use("/api/stripe/webhook", express.raw({ type: "application/json" }));
 
 // JSON and URL encoded body parsing for all other routes
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Increased limit to 50mb to handle base64-encoded images (10MB images become ~13MB when encoded)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 // Session configuration with PostgreSQL store
 const PgSession = pgSession(session);
