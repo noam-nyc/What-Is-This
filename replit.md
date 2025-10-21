@@ -10,7 +10,25 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates (October 2025)
 
-### Latest Changes (October 19, 2025 - Final Deployment Prep)
+### Latest Changes (October 21, 2025 - Domain & Email Configuration)
+
+**Production Domain**
+- Secured production domain: **what-is-this.app**
+- Support/contact email: **info@what-is-this.app**
+- All UI references updated to use new email address
+
+**Image Optimization (Cost Reduction)**
+- Client-side image optimization before OpenAI API calls
+- Resize to max 1024px, JPEG 85% compression
+- Reduces costs by 80-90% (~$0.04 → ~$0.006 per 12MP image)
+- Maintains analysis quality while dramatically improving margins
+
+**UX Improvements**
+- Fixed registration 404 redirect race condition with 100ms delay
+- Smooth authentication state propagation before navigation
+- All email addresses consolidated to info@what-is-this.app
+
+### Previous Changes (October 19, 2025 - Final Deployment Prep)
 
 **Language Support Expansion**
 - Added 3 new languages: Italian (it), Russian (ru), Hebrew (he)
