@@ -129,7 +129,7 @@ Update `index.html` `<head>`:
 If purchased externally:
 
 1. In Replit Publishing → **Settings** → **Custom Domain**
-2. Enter your domain: `whatisthis.app`
+2. Enter your domain: `what-is-this.app`
 3. Copy the DNS records shown:
    - **A Record**: `100.100.100.100` (example)
    - **TXT Record**: For verification

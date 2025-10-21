@@ -2,14 +2,14 @@
 
 ## Overview
 
-This guide walks you through configuring a custom domain for email delivery using Resend. This enables password reset emails to be sent from your branded domain (e.g., `noreply@what-is-this.app`) instead of a generic service.
+This guide walks you through configuring a custom domain for email delivery using Resend. This enables password reset emails to be sent from your branded domain (e.g., `info@what-is-this.app`) instead of a generic service.
 
 ---
 
 ## Why Use a Custom Domain?
 
 **Benefits:**
-- ✅ **Professional branding**: Emails from `noreply@yourapp.com` instead of `noreply@resend.dev`
+- ✅ **Professional branding**: Emails from `info@yourapp.com` instead of generic service addresses
 - ✅ **Better deliverability**: Custom domains have higher email delivery rates
 - ✅ **Trust**: Users are more likely to open emails from your domain
 - ✅ **Separation**: Password resets, notifications use different subdomains for organization
@@ -47,7 +47,7 @@ This guide walks you through configuring a custom domain for email delivery usin
   - Better reputation management
   - Can use different subdomains for different email types
 - Examples:
-  - `noreply@updates.what-is-this.app`
+  - `info@updates.what-is-this.app`
   - `info@what-is-this.app`
 
 **Option B: Use Root Domain**

@@ -111,7 +111,7 @@ All tiers now exceed 25% target margin:
 3. Add to DNS provider (Cloudflare/Namecheap/GoDaddy)
 4. Wait 5-30 minutes for propagation
 5. Verify in Resend dashboard
-6. Update `from` address in code: `noreply@mail.yourapp.com`
+6. Update `from` address in code: `info@what-is-this.app`
 7. Test password reset flow
 
 ### Beta Testing Launch
