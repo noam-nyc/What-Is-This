@@ -54,6 +54,8 @@ export default function Register() {
       });
 
       const userData = await res.json();
+      
+      // Update the auth query cache with the new user data
       queryClient.setQueryData(["/api/auth/user"], userData.user);
 
       toast({
@@ -61,14 +63,18 @@ export default function Register() {
         description: "Welcome to What Is This?. Let's get started!",
       });
 
-      setLocation("/onboarding");
+      // Wait for React to finish rendering the authenticated state before redirecting
+      // This prevents the brief 404 error when navigating to /onboarding
+      setTimeout(() => {
+        setLocation("/onboarding");
+        setIsLoading(false);
+      }, 100);
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Registration failed",
         description: error.message || "Please try again.",
       });
-    } finally {
       setIsLoading(false);
     }
   };
