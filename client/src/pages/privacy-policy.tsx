@@ -210,7 +210,7 @@ export default function PrivacyPolicy() {
               <li><strong>Opt-Out:</strong> Unsubscribe from non-essential communications</li>
             </ul>
             <p className="text-base mt-4">
-              To exercise these rights, contact us through the in-app support or email us at support@whatisthisapp.com
+              To exercise these rights, contact us through the in-app support or email us at info@what-is-this.app
             </p>
           </CardContent>
         </Card>
@@ -271,8 +271,8 @@ export default function PrivacyPolicy() {
               If you have questions about this Privacy Policy or how we handle your data, please contact us:
             </p>
             <ul className="list-none space-y-1 text-muted-foreground">
-              <li><strong>Email:</strong> privacy@whatisthisapp.com</li>
-              <li><strong>Support:</strong> support@whatisthisapp.com</li>
+              <li><strong>Email:</strong> info@what-is-this.app</li>
+              <li><strong>Support:</strong> info@what-is-this.app</li>
             </ul>
           </CardContent>
         </Card>
