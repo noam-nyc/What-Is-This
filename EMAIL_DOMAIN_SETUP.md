@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide walks you through configuring a custom domain for email delivery using Resend. This enables password reset emails to be sent from your branded domain (e.g., `noreply@whatisthis.app`) instead of a generic service.
+This guide walks you through configuring a custom domain for email delivery using Resend. This enables password reset emails to be sent from your branded domain (e.g., `noreply@what-is-this.app`) instead of a generic service.
 
 ---
 
@@ -20,7 +20,7 @@ This guide walks you through configuring a custom domain for email delivery usin
 
 ## Prerequisites
 
-- Registered domain name (`whatisthis.app`, `example.com`, etc.)
+- Registered domain name (`what-is-this.app`, `example.com`, etc.)
 - Access to DNS settings at your registrar (Namecheap, Cloudflare, GoDaddy, etc.)
 - Resend account (sign up at https://resend.com)
 
@@ -41,17 +41,17 @@ This guide walks you through configuring a custom domain for email delivery usin
 ## Step 2: Choose Your Email Domain
 
 **Option A: Use Subdomain (Recommended)**
-- Format: `updates.whatisthis.app` or `mail.yourapp.com`
+- Format: `updates.what-is-this.app` or `mail.yourapp.com`
 - Pros: 
   - Keeps main domain clean
   - Better reputation management
   - Can use different subdomains for different email types
 - Examples:
-  - `noreply@updates.whatisthis.app`
-  - `support@mail.yourapp.com`
+  - `noreply@updates.what-is-this.app`
+  - `info@what-is-this.app`
 
 **Option B: Use Root Domain**
-- Format: `whatisthis.app`
+- Format: `what-is-this.app`
 - Pros: Simpler, shorter
 - Cons: Mixes web traffic with email reputation
 
@@ -64,8 +64,8 @@ This guide walks you through configuring a custom domain for email delivery usin
 1. Log into https://resend.com/domains
 2. Click **"Add Domain"**
 3. Enter your domain:
-   - Subdomain: `mail.whatisthis.app`
-   - Or root: `whatisthis.app`
+   - Subdomain: `mail.what-is-this.app`
+   - Or root: `what-is-this.app`
 4. Click **"Add Domain"**
 
 Resend will show you 3 DNS records to add:
@@ -87,7 +87,7 @@ You need to add **3 types of records** to your domain's DNS:
 | **Value** | `v=spf1 include:_spf.resend.com ~all` |
 | **TTL** | 3600 (or Auto) |
 
-**Example** (for `mail.whatisthis.app`):
+**Example** (for `mail.what-is-this.app`):
 ```
 Type: TXT
 Name: mail
@@ -142,7 +142,7 @@ Value: feedback-smtp.us-east-1.amazonses.com
 2. Click **"Add record"**
 3. For each record above:
    - Select **Type** (TXT or MX)
-   - Enter **Name** (omit your domain, use `mail` not `mail.whatisthis.app`)
+   - Enter **Name** (omit your domain, use `mail` not `mail.what-is-this.app`)
    - Paste **Value** from Resend
    - Set **Proxy status** to **DNS only** (grey cloud)
 4. Click **"Save"**
@@ -166,7 +166,7 @@ Value: feedback-smtp.us-east-1.amazonses.com
 ### Other Providers
 
 Follow similar steps - key points:
-- **Remove domain suffix from Name field** (use `mail`, not `mail.whatisthis.app`)
+- **Remove domain suffix from Name field** (use `mail`, not `mail.what-is-this.app`)
 - **Copy values exactly** from Resend (no typos!)
 - **Turn off proxy/CDN** for email records (if applicable)
 
@@ -204,7 +204,7 @@ Follow similar steps - key points:
 3. Click **"Send Reset Link"**
 4. Check inbox for password reset email
 
-**Expected From Address**: `noreply@mail.whatisthis.app`
+**Expected From Address**: `info@what-is-this.app`
 
 ---
 
@@ -219,7 +219,7 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 await resend.emails.send({
-  from: 'What Is This <noreply@mail.whatisthis.app>', // Update this
+  from: 'What Is This <info@what-is-this.app>', // Update this
   to: user.email,
   subject: 'Reset Your Password - What Is This?',
   html: emailHtml,
@@ -236,7 +236,7 @@ await resend.emails.send({
 
 **Solutions:**
 1. Wait up to 48 hours for DNS propagation
-2. Check DNS records with: `nslookup -type=txt mail.whatisthis.app`
+2. Check DNS records with: `nslookup -type=txt mail.what-is-this.app`
 3. Ensure Priority 10 for MX record
 4. Remove any conflicting MX records
 
@@ -257,7 +257,7 @@ await resend.emails.send({
 
 **Solutions:**
 1. Verify domain is "Verified" in Resend
-2. Check `from` address matches exactly: `noreply@mail.whatisthis.app`
+2. Check `from` address matches exactly: `info@what-is-this.app`
 3. Ensure RESEND_API_KEY is correct in environment
 
 ### Issue: MX record conflicts
