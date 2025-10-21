@@ -313,7 +313,7 @@ export default function Help() {
               If you can't find the answer to your question here, we're happy to help!
             </p>
             <Button className="h-12 text-lg" asChild data-testid="button-contact">
-              <a href="mailto:support@whatisthis.app">
+              <a href="mailto:info@what-is-this.app">
                 <Mail className="w-5 h-5 mr-2" />
                 Contact Support
               </a>
