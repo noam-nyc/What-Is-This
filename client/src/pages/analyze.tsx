@@ -332,7 +332,9 @@ export default function Analyze() {
         // Optimize base64 image before sending to OpenAI (resize to 1024px, compress to JPEG 85%)
         // This reduces costs by 80-90% while maintaining analysis quality
         const optimizedImage = await optimizeImageForAPI(imagePreview);
-        payload.imageBase64 = optimizedImage;
+        // Strip the data URL prefix - backend will add it back
+        const base64Data = optimizedImage.replace(/^data:image\/\w+;base64,/, '');
+        payload.imageBase64 = base64Data;
       }
 
       const response = await apiRequest("POST", "/api/analyze", payload);
